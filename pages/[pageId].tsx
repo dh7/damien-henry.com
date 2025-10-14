@@ -1,4 +1,4 @@
-import { GetStaticProps } from 'next'
+import { GetStaticPaths, GetStaticProps } from 'next'
 import { NotionAPI } from 'notion-client'
 import { NotionRenderer } from 'react-notion-x'
 import { ExtendedRecordMap } from 'notion-types'
@@ -19,11 +19,16 @@ const Modal = dynamic(() =>
   import('react-notion-x/build/third-party/modal').then((m) => m.Modal)
 )
 
-interface HomeProps {
+interface PageProps {
   recordMap: ExtendedRecordMap
+  pageId: string
 }
 
-export default function Home({ recordMap }: HomeProps) {
+export default function NotionPage({ recordMap, pageId }: PageProps) {
+  if (!recordMap) {
+    return <div>Loading...</div>
+  }
+
   return (
     <>
       <Head>
@@ -63,17 +68,21 @@ export default function Home({ recordMap }: HomeProps) {
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticPaths: GetStaticPaths = async () => {
+  // Return empty paths to enable fallback
+  return {
+    paths: [],
+    fallback: 'blocking',
+  }
+}
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   const notion = new NotionAPI()
-  const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+  const pageId = params?.pageId as string
 
   if (!pageId) {
-    console.warn('NEXT_PUBLIC_NOTION_PAGE_ID is not set')
     return {
-      props: {
-        recordMap: {},
-      },
-      revalidate: 60,
+      notFound: true,
     }
   }
 
@@ -83,15 +92,14 @@ export const getStaticProps: GetStaticProps = async () => {
     return {
       props: {
         recordMap,
+        pageId,
       },
-      revalidate: 60, // Revalidate every 60 seconds
+      revalidate: 60,
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)
     return {
-      props: {
-        recordMap: {},
-      },
+      notFound: true,
       revalidate: 60,
     }
   }

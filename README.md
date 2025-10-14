@@ -45,12 +45,14 @@ The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new
 ## Features
 
 - ✅ Renders Notion pages with full formatting support
+- ✅ **Subpage navigation** - All Notion subpages work automatically
 - ✅ Code syntax highlighting
 - ✅ Math equations (KaTeX)
 - ✅ Image support
 - ✅ Collections/Databases
 - ✅ Static site generation with ISR (revalidates every 60 seconds)
 - ✅ Fully responsive design
+- ✅ Dynamic routing for unlimited Notion pages
 
 ## Customization
 
