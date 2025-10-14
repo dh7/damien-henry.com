@@ -1,0 +1,29 @@
+{
+  "name": "damien-henry-com",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-notion-x": "^7.0.0",
+    "@notionhq/client": "^2.2.14",
+    "notion-client": "^6.16.0",
+    "notion-utils": "^6.16.0",
+    "katex": "^0.16.9",
+    "prismjs": "^1.29.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.2.0"
+  }
+}
+
