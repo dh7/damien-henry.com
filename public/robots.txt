@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://damien-henry.com/sitemap.xml
+

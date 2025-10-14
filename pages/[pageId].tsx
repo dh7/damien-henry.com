@@ -1,7 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from 'next'
 import { NotionAPI } from 'notion-client'
 import { NotionRenderer } from 'react-notion-x'
-import { ExtendedRecordMap } from 'notion-types'
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -69,10 +68,32 @@ export default function NotionPage({ recordMap, pageId }: PageProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // Return empty paths to enable fallback
-  return {
-    paths: [],
-    fallback: 'blocking',
+  const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+  
+  if (!rootPageId) {
+    return {
+      paths: [],
+      fallback: 'blocking',
+    }
+  }
+
+  try {
+    const { getAllPageIds } = await import('../lib/getAllPageIds')
+    const pageIds = await getAllPageIds(rootPageId)
+    const paths = pageIds.map(id => ({ params: { pageId: id } }))
+    
+    console.log(`Pre-generating ${paths.length} pages at build time (including nested pages)`)
+    
+    return {
+      paths,
+      fallback: 'blocking', // Still generate new pages on-demand if added later
+    }
+  } catch (error) {
+    console.error('Error fetching page IDs for static paths:', error)
+    return {
+      paths: [],
+      fallback: 'blocking',
+    }
   }
 }
 

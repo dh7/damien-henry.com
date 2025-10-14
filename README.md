@@ -24,6 +24,7 @@ A personal website powered by [Next.js](https://nextjs.org/) and [React-Notion-X
    Create a `.env.local` file in the root directory:
    ```bash
    NEXT_PUBLIC_NOTION_PAGE_ID=your-notion-page-id-here
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
 
 4. **Run the development server:**
@@ -37,7 +38,9 @@ A personal website powered by [Next.js](https://nextjs.org/) and [React-Notion-X
 
 1. Push your code to GitHub
 2. Import your repository on [Vercel](https://vercel.com)
-3. Add the environment variable `NEXT_PUBLIC_NOTION_PAGE_ID` in your Vercel project settings
+3. Add environment variables in your Vercel project settings:
+   - `NEXT_PUBLIC_NOTION_PAGE_ID`
+   - `NEXT_PUBLIC_SITE_URL` (your production URL)
 4. Deploy!
 
 The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new).
@@ -53,6 +56,8 @@ The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new
 - ✅ Static site generation with ISR (revalidates every 60 seconds)
 - ✅ Fully responsive design
 - ✅ Dynamic routing for unlimited Notion pages
+- ✅ **SEO optimized** - Dynamic sitemap & robots.txt
+- ✅ Server-side rendering for crawlers (fallback: 'blocking')
 
 ## Customization
 
