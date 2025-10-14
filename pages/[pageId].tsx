@@ -20,7 +20,7 @@ const Modal = dynamic(() =>
 )
 
 interface PageProps {
-  recordMap: ExtendedRecordMap
+  recordMap: any
   pageId: string
 }
 

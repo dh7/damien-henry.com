@@ -20,7 +20,7 @@ const Modal = dynamic(() =>
 )
 
 interface HomeProps {
-  recordMap: ExtendedRecordMap
+  recordMap: any
 }
 
 export default function Home({ recordMap }: HomeProps) {
