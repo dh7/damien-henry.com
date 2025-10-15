@@ -9,15 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "katex": "^0.16.9",
     "next": "^14.0.0",
+    "notion-client": "^6.16.0",
+    "notion-utils": "^6.16.0",
+    "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-notion-x": "^7.0.0",
-    "@notionhq/client": "^2.2.14",
-    "notion-client": "^6.16.0",
-    "notion-utils": "^6.16.0",
-    "katex": "^0.16.9",
-    "prismjs": "^1.29.0"
+    "react-tweet": "^3.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.8.0",
@@ -26,4 +27,3 @@
     "typescript": "^5.2.0"
   }
 }
-

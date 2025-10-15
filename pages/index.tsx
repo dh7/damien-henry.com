@@ -20,6 +20,9 @@ const Equation = dynamic(() =>
 const Modal = dynamic(() =>
   import('react-notion-x/build/third-party/modal').then((m) => m.Modal)
 )
+const Tweet = dynamic(() =>
+  import('react-tweet').then((m) => m.Tweet)
+)
 
 interface HomeProps {
   recordMap: any
@@ -51,6 +54,7 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
             Collection,
             Equation,
             Modal,
+            Tweet,
             nextLink: Link,
           }}
           mapPageUrl={(pageId) => {

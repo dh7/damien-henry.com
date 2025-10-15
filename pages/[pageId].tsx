@@ -20,6 +20,9 @@ const Equation = dynamic(() =>
 const Modal = dynamic(() =>
   import('react-notion-x/build/third-party/modal').then((m) => m.Modal)
 )
+const Tweet = dynamic(() =>
+  import('react-tweet').then((m) => m.Tweet)
+)
 
 interface PageProps {
   recordMap: any
@@ -67,6 +70,7 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
             Collection,
             Equation,
             Modal,
+            Tweet,
             nextLink: Link,
           }}
           mapPageUrl={(notionPageId) => {
