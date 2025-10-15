@@ -34,3 +34,11 @@ a {
   margin-bottom: 2rem;
 }
 
+/* Hide page icons */
+.notion-page-icon-wrapper,
+.notion-page-icon-cover,
+.notion-page-icon-hero,
+.notion-collection-page-icon {
+  display: none !important;
+}
+
