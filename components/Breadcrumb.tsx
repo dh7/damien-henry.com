@@ -1,12 +1,6 @@
 import Link from 'next/link'
 
-interface BreadcrumbProps {
-  breadcrumbs?: Array<{ title: string; href: string }>
-}
-
-export default function Breadcrumb({ breadcrumbs = [] }: BreadcrumbProps) {
-  const isHome = breadcrumbs.length === 0
-
+export default function Breadcrumb() {
   return (
     <div style={{
       position: 'fixed',
@@ -23,13 +17,12 @@ export default function Breadcrumb({ breadcrumbs = [] }: BreadcrumbProps) {
       fontSize: '15px',
       display: 'flex',
       alignItems: 'center',
-      gap: '10px',
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
     }}>
       <Link href="/" style={{ 
-        color: isHome ? '#000' : '#666',
+        color: '#000',
         textDecoration: 'none',
-        fontWeight: isHome ? 600 : 500,
+        fontWeight: 600,
         transition: 'color 0.2s',
         display: 'flex',
         alignItems: 'center',
@@ -38,26 +31,6 @@ export default function Breadcrumb({ breadcrumbs = [] }: BreadcrumbProps) {
         <span>👋</span>
         <span>Damien Henry</span>
       </Link>
-      
-      {breadcrumbs.map((crumb, index) => (
-        <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ color: '#ccc', fontSize: '12px' }}>/</span>
-          {index === breadcrumbs.length - 1 ? (
-            <span style={{ color: '#000', fontWeight: 500 }}>
-              {crumb.title}
-            </span>
-          ) : (
-            <Link href={crumb.href} style={{ 
-              color: '#666',
-              textDecoration: 'none',
-              fontWeight: 400,
-              transition: 'color 0.2s'
-            }}>
-              {crumb.title}
-            </Link>
-          )}
-        </div>
-      ))}
     </div>
   )
 }

@@ -37,7 +37,7 @@ export default function Home({ recordMap }: HomeProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {revalidateSecret && <RevalidateButton secret={revalidateSecret} />}
-      <Breadcrumb breadcrumbs={[]} />
+      <Breadcrumb />
       <div style={{ paddingTop: '60px' }}>
         <main>
         <NotionRenderer
