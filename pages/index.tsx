@@ -23,9 +23,10 @@ const Modal = dynamic(() =>
 
 interface HomeProps {
   recordMap: any
+  slugMappings?: Array<{ slug: string; pageId: string; title: string }>
 }
 
-export default function Home({ recordMap }: HomeProps) {
+export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
   const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
   
   return (
@@ -54,15 +55,20 @@ export default function Home({ recordMap }: HomeProps) {
           }}
           mapPageUrl={(pageId) => {
             const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
-            // Remove dashes from page IDs for comparison
             const cleanPageId = pageId.replace(/-/g, '')
             const cleanRootId = rootPageId.replace(/-/g, '')
             
-            // If it's the root page, link to home
             if (cleanPageId === cleanRootId) {
               return '/'
             }
-            // Otherwise link to the dynamic route
+            
+            // Find slug for this page ID
+            const mapping = slugMappings.find(m => m.pageId.replace(/-/g, '') === cleanPageId)
+            if (mapping) {
+              return `/${mapping.slug}`
+            }
+            
+            // Fallback to page ID if no mapping found
             return `/${pageId}`
           }}
         />
@@ -88,10 +94,15 @@ export const getStaticProps: GetStaticProps = async () => {
 
   try {
     const recordMap = await notion.getPage(pageId)
+    
+    // Get slug mappings for internal links
+    const { generateSlugMappings } = await import('../lib/slugMapping')
+    const slugMappings = await generateSlugMappings(pageId)
 
     return {
       props: {
         recordMap,
+        slugMappings,
       },
       revalidate: false, // Use on-demand revalidation only (via button)
     }
@@ -100,6 +111,7 @@ export const getStaticProps: GetStaticProps = async () => {
     return {
       props: {
         recordMap: {},
+        slugMappings: [],
       },
       revalidate: 60,
     }

@@ -24,9 +24,10 @@ const Modal = dynamic(() =>
 interface PageProps {
   recordMap: any
   pageId: string
+  slugMappings?: Array<{ slug: string; pageId: string; title: string }>
 }
 
-export default function NotionPage({ recordMap, pageId }: PageProps) {
+export default function NotionPage({ recordMap, pageId, slugMappings = [] }: PageProps) {
   const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
   
   // Extract page title for meta tag
@@ -68,18 +69,23 @@ export default function NotionPage({ recordMap, pageId }: PageProps) {
             Modal,
             nextLink: Link,
           }}
-          mapPageUrl={(pageId) => {
+          mapPageUrl={(notionPageId) => {
             const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
-            // Remove dashes from page IDs for comparison
-            const cleanPageId = pageId.replace(/-/g, '')
+            const cleanPageId = notionPageId.replace(/-/g, '')
             const cleanRootId = rootPageId.replace(/-/g, '')
             
-            // If it's the root page, link to home
             if (cleanPageId === cleanRootId) {
               return '/'
             }
-            // Otherwise link to the dynamic route
-            return `/${pageId}`
+            
+            // Find slug for this page ID
+            const mapping = slugMappings.find(m => m.pageId.replace(/-/g, '') === cleanPageId)
+            if (mapping) {
+              return `/${mapping.slug}`
+            }
+            
+            // Fallback to page ID if no mapping found
+            return `/${notionPageId}`
           }}
         />
         </main>
@@ -99,18 +105,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }
 
   try {
-    const { getAllPageIds } = await import('../lib/getAllPageIds')
-    const pageIds = await getAllPageIds(rootPageId)
-    const paths = pageIds.map(id => ({ params: { pageId: id } }))
-    
-    console.log(`Pre-generating ${paths.length} pages at build time (including nested pages)`)
+    const { generateSlugMappings } = await import('../lib/slugMapping')
+    const mappings = await generateSlugMappings(rootPageId)
+    const paths = mappings.map(mapping => ({ params: { pageId: mapping.slug } }))
     
     return {
       paths,
       fallback: 'blocking', // Still generate new pages on-demand if added later
     }
   } catch (error) {
-    console.error('Error fetching page IDs for static paths:', error)
+    console.error('Error fetching page slugs for static paths:', error)
     return {
       paths: [],
       fallback: 'blocking',
@@ -120,21 +124,34 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const notion = new NotionAPI()
-  const pageId = params?.pageId as string
+  const slug = params?.pageId as string // This is actually a slug now
+  const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
 
-  if (!pageId) {
+  if (!slug) {
     return {
       notFound: true,
     }
   }
 
   try {
-    const recordMap = await notion.getPage(pageId)
+    // Get slug mappings to find the actual page ID
+    const { generateSlugMappings, getPageIdFromSlug } = await import('../lib/slugMapping')
+    const mappings = await generateSlugMappings(rootPageId)
+    const actualPageId = getPageIdFromSlug(mappings, slug)
+    
+    if (!actualPageId) {
+      return {
+        notFound: true,
+      }
+    }
+
+    const recordMap = await notion.getPage(actualPageId)
 
     return {
       props: {
         recordMap,
-        pageId,
+        pageId: actualPageId,
+        slugMappings: mappings,
       },
       revalidate: false, // Use on-demand revalidation only (via button)
     }
