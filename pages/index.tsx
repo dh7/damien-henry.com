@@ -5,6 +5,7 @@ import { ExtendedRecordMap } from 'notion-types'
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import RevalidateButton from '@/components/RevalidateButton'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -24,6 +25,8 @@ interface HomeProps {
 }
 
 export default function Home({ recordMap }: HomeProps) {
+  const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
+  
   return (
     <>
       <Head>
@@ -32,6 +35,7 @@ export default function Home({ recordMap }: HomeProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      {revalidateSecret && <RevalidateButton secret={revalidateSecret} />}
       <main>
         <NotionRenderer
           recordMap={recordMap}
@@ -84,7 +88,7 @@ export const getStaticProps: GetStaticProps = async () => {
       props: {
         recordMap,
       },
-      revalidate: 60, // Revalidate every 60 seconds
+      revalidate: false, // Use on-demand revalidation only (via button)
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)

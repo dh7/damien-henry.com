@@ -59,6 +59,63 @@ The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new
 - ✅ **SEO optimized** - Dynamic sitemap & robots.txt
 - ✅ Server-side rendering for crawlers (fallback: 'blocking')
 
+## Updating Content from Notion
+
+**Option 1: Hidden Refresh Button (Recommended)**
+
+A hidden refresh button is built into every page:
+
+1. **Setup:**
+   Add to your `.env.local`:
+   ```bash
+   REVALIDATE_SECRET=your-secret-here
+   NEXT_PUBLIC_REVALIDATE_SECRET=your-secret-here
+   ```
+
+2. **Usage (3 ways):**
+   
+   **A) URL Parameter (easiest):**
+   - Visit: `https://yoursite.com/?refresh=your-secret`
+   - Button appears automatically
+   
+   **B) Keyboard Shortcut:**
+   - Press **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows/Linux)
+   - Button appears
+   
+   **C) Bookmark:**
+   - Create a bookmark with URL: `https://yoursite.com/?refresh=your-secret`
+   - Click bookmark to show refresh button
+   
+   Then click "🔄 Refresh Page" to pull latest Notion content
+
+**Option 2: API Endpoint**
+
+Refresh programmatically:
+```bash
+curl "https://yoursite.com/api/revalidate?secret=your-secret&pageId=page-id"
+```
+
+**Option 3: Full Rebuild (for new pages)**
+
+To automatically rebuild your site when you update Notion:
+
+1. **Create a Deploy Hook in Vercel:**
+   - Go to your Vercel project → Settings → Git → Deploy Hooks
+   - Create a new hook (name it "Notion Updates")
+   - Copy the webhook URL
+
+2. **Add environment variables:**
+   ```bash
+   REBUILD_SECRET_TOKEN=your-random-secret-here
+   VERCEL_DEPLOY_HOOK_URL=your-deploy-hook-url
+   ```
+
+3. **Trigger rebuild:**
+   ```bash
+   curl -X POST https://yoursite.com/api/rebuild \
+     -H "x-rebuild-token: your-secret-token"
+   ```
+
 ## Customization
 
 - Edit `styles/globals.css` to customize the appearance

@@ -4,6 +4,7 @@ import { NotionRenderer } from 'react-notion-x'
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import RevalidateButton from '@/components/RevalidateButton'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -24,6 +25,8 @@ interface PageProps {
 }
 
 export default function NotionPage({ recordMap, pageId }: PageProps) {
+  const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
+  
   if (!recordMap) {
     return <div>Loading...</div>
   }
@@ -36,6 +39,7 @@ export default function NotionPage({ recordMap, pageId }: PageProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      {revalidateSecret && <RevalidateButton pageId={pageId} secret={revalidateSecret} />}
       <main>
         <NotionRenderer
           recordMap={recordMap}
@@ -115,7 +119,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         recordMap,
         pageId,
       },
-      revalidate: 60,
+      revalidate: false, // Use on-demand revalidation only (via button)
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)
