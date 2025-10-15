@@ -11,16 +11,30 @@ body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Apply Poppins font globally */
+.notion,
+.notion-page,
+.notion-text,
+.notion-h1,
+.notion-h2,
+.notion-h3,
+.notion-quote,
+.notion-callout {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 /* Hide page icons */
