@@ -41,6 +41,7 @@ export default function Home({ recordMap }: HomeProps) {
           recordMap={recordMap}
           fullPage={true}
           darkMode={false}
+          disableHeader={false}
           components={{
             Code,
             Collection,

@@ -45,6 +45,7 @@ export default function NotionPage({ recordMap, pageId }: PageProps) {
           recordMap={recordMap}
           fullPage={true}
           darkMode={false}
+          disableHeader={false}
           components={{
             Code,
             Collection,
