@@ -23,8 +23,11 @@ function generateSlug(title: string): string {
 export async function generateSlugMappings(rootPageId: string): Promise<PageSlugMapping[]> {
   // Return cached version if still valid
   if (cachedMappings && Date.now() - cacheTime < CACHE_TTL) {
+    console.log('✓ Using cached slug mappings')
     return cachedMappings
   }
+  
+  console.log('⚠ Fetching all pages from Notion (this may take 20-30 seconds)...')
   const notion = new NotionAPI()
   const mappings: PageSlugMapping[] = []
   const usedSlugs = new Set<string>()
@@ -105,6 +108,8 @@ export async function generateSlugMappings(rootPageId: string): Promise<PageSlug
   // Cache the results
   cachedMappings = mappings
   cacheTime = Date.now()
+  
+  console.log(`✓ Cached ${mappings.length} page mappings for 5 minutes`)
   
   return mappings
 }

@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['react-tweet'],
+  transpilePackages: ['react-tweet', 'lite-youtube-embed'],
   images: {
-    domains: ['www.notion.so', 's3.us-west-2.amazonaws.com', 'images.unsplash.com'],
+    domains: ['www.notion.so', 's3.us-west-2.amazonaws.com', 'images.unsplash.com', 'i.ytimg.com'],
     unoptimized: true,
   },
 }
