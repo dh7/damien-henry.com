@@ -6,6 +6,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
+import Breadcrumb from '@/components/Breadcrumb'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -36,12 +37,14 @@ export default function Home({ recordMap }: HomeProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {revalidateSecret && <RevalidateButton secret={revalidateSecret} />}
-      <main>
+      <Breadcrumb breadcrumbs={[]} />
+      <div style={{ paddingTop: '60px' }}>
+        <main>
         <NotionRenderer
           recordMap={recordMap}
           fullPage={true}
           darkMode={false}
-          disableHeader={false}
+          disableHeader={true}
           components={{
             Code,
             Collection,
@@ -63,7 +66,8 @@ export default function Home({ recordMap }: HomeProps) {
             return `/${pageId}`
           }}
         />
-      </main>
+        </main>
+      </div>
     </>
   )
 }

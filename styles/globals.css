@@ -8,6 +8,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -43,6 +44,34 @@ a {
 .notion-page-icon-hero,
 .notion-collection-page-icon {
   display: none !important;
+}
+
+/* Hide Notion's default navigation/breadcrumb bar */
+.notion-breadcrumb,
+.notion-page-breadcrumbs,
+.notion-scroller.horizontal,
+.notion-collection-row:first-child,
+.notion-page-header,
+.notion-nav-header,
+.notion-topbar,
+nav.notion-topbar,
+.notion-overlay-container,
+.notion-presence-container,
+.notion-cursor-listener,
+header,
+.notion-page > header,
+.notion-full-page > header {
+  display: none !important;
+}
+
+/* Force hide any header at the top of notion pages */
+.notion-page-content > div:first-child:not(.notion-text):not(.notion-header):not(.notion-column-list) {
+  display: none !important;
+}
+
+/* Ensure body doesn't scroll under fixed breadcrumb */
+body {
+  position: relative;
 }
 
 /* Mobile responsive adjustments */
