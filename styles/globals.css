@@ -69,6 +69,41 @@ header,
   display: none !important;
 }
 
+/* Style mentions - underline like classical links, keep icon, remove name */
+.notion-link-mention,
+a.notion-link-mention,
+.notion-link-mention *,
+.notion-link-mention span {
+  font-weight: 400 !important;
+  text-decoration: underline !important;
+  text-decoration-color: rgba(55, 53, 47, 0.4) !important;
+  text-underline-offset: 2px !important;
+  transition: text-decoration-color 0.2s !important;
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.notion-link-mention:hover,
+a.notion-link-mention:hover {
+  text-decoration-color: rgba(55, 53, 47, 0.8) !important;
+}
+
+/* Keep icon visible */
+.notion-link-mention .notion-page-icon {
+  display: inline-block !important;
+  margin-right: 4px !important;
+  vertical-align: middle !important;
+}
+
+/* Hide the page title text after icon */
+.notion-page-title,
+.notion-link-mention-provider,
+.notion-link-mention-icon,
+span.notion-link-mention-provider {
+  display: none !important;
+}
+
 /* Ensure body doesn't scroll under fixed breadcrumb */
 body {
   position: relative;
