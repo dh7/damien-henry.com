@@ -69,10 +69,14 @@ header,
   display: none !important;
 }
 
-/* Style mentions - underline like classical links, keep icon, remove name */
+/* Style all links consistently - no bold, underlined */
+.notion-link,
+a.notion-link,
 .notion-link-mention,
 a.notion-link-mention,
+.notion-link *,
 .notion-link-mention *,
+.notion-link span,
 .notion-link-mention span {
   font-weight: 400 !important;
   text-decoration: underline !important;
@@ -84,6 +88,8 @@ a.notion-link-mention,
   background: transparent !important;
 }
 
+.notion-link:hover,
+a.notion-link:hover,
 .notion-link-mention:hover,
 a.notion-link-mention:hover {
   text-decoration-color: rgba(55, 53, 47, 0.8) !important;
@@ -101,6 +107,15 @@ a.notion-link-mention:hover {
 .notion-link-mention-icon,
 span.notion-link-mention-provider {
   display: none !important;
+}
+
+/* Remove bold from page links and all bold tags */
+.notion-page-link,
+.notion-page-link b,
+.notion-page-title-text,
+.notion-page-title-text b,
+.notion-text b {
+  font-weight: 400 !important;
 }
 
 /* Ensure body doesn't scroll under fixed breadcrumb */
