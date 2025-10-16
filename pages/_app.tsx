@@ -30,8 +30,9 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router])
   
   useEffect(() => {
-    // Replace YouTube iframes with lite-youtube on client side
+    // Replace YouTube iframes and static previews with lite-youtube
     const replaceYouTubeEmbeds = () => {
+      // Replace iframes
       const iframes = document.querySelectorAll('.notion-video iframe[src*="youtube.com"]')
       iframes.forEach((iframe) => {
         const src = iframe.getAttribute('src')
@@ -43,10 +44,35 @@ export default function App({ Component, pageProps }: AppProps) {
           const liteYt = document.createElement('lite-youtube')
           liteYt.setAttribute('videoid', videoId)
           liteYt.setAttribute('playlabel', 'Play')
+          liteYt.setAttribute('posterquality', 'maxresdefault')
           
           const parent = iframe.parentElement
           if (parent) {
             parent.replaceChild(liteYt, iframe)
+          }
+        }
+      })
+
+      // Replace static thumbnail previews
+      const thumbnails = document.querySelectorAll('.notion-yt-thumbnail')
+      thumbnails.forEach((img) => {
+        const src = img.getAttribute('src')
+        if (!src) return
+        
+        // Extract video ID from thumbnail URL (format: i.ytimg.com/vi/VIDEO_ID/...)
+        const videoIdMatch = src.match(/\/vi\/([^\/]+)\//)
+        if (videoIdMatch && videoIdMatch[1]) {
+          const videoId = videoIdMatch[1]
+          const liteYt = document.createElement('lite-youtube')
+          liteYt.setAttribute('videoid', videoId)
+          liteYt.setAttribute('playlabel', 'Play')
+          liteYt.setAttribute('posterquality', 'maxresdefault')
+          
+          // Find the wrapper container and replace it
+          const wrapper = img.closest('.notion-asset-wrapper-video')
+          if (wrapper) {
+            wrapper.innerHTML = ''
+            wrapper.appendChild(liteYt)
           }
         }
       })

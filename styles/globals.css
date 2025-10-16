@@ -180,10 +180,30 @@ body {
 lite-youtube {
   display: block;
   width: 100%;
+  max-width: 100%;
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
+/* Use higher quality thumbnails */
+lite-youtube::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-image: inherit;
+  border-radius: 8px !important;
+  z-index: 0;
+}
+
+/* In notion-video containers (for replaced iframes) */
 .notion-video lite-youtube {
   position: absolute !important;
   top: 0 !important;
@@ -192,10 +212,10 @@ lite-youtube {
   height: 100% !important;
 }
 
-/* Improve play button appearance */
-lite-youtube::before {
-  background-color: rgba(0, 0, 0, 0.7) !important;
-  border-radius: 8px !important;
+/* In asset-wrapper-video (for replaced static previews) */
+.notion-asset-wrapper-video lite-youtube {
+  max-width: 720px !important;
+  margin: 0 auto !important;
 }
 
 lite-youtube > .lty-playbtn {
