@@ -220,3 +220,15 @@ lite-youtube:hover > .lty-playbtn {
   }
 }
 
+/* Mention hover card background fix */
+.notion-link-mention-preview,
+.notion-link-mention-card,
+.notion-link-mention-preview-content {
+  background: white !important;
+  background-color: white !important;
+}
+
+.notion-link-mention-preview-content {
+  padding: 12px !important;
+}
+
