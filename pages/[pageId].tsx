@@ -117,8 +117,26 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
     <>
       <Head>
         <title>{pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'}</title>
-        <meta name="description" content="Personal website powered by Notion" />
+        <meta name="description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'} />
+        <meta property="og:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <meta property="og:site_name" content="Damien Henry" />
+        <meta property="og:locale" content="en-US" />
+        <meta property="og:image" content="https://assets.super.so/220e7b19-ff46-46b5-934f-cc27694f7bd1/uploads/cover/93026491-99bb-4e54-b5c6-3bb672b44eae.png" />
+        <meta property="og:image:alt" content="Damien Henry" />
+        <meta property="og:type" content="article" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'} />
+        <meta name="twitter:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <meta name="twitter:image" content="https://assets.super.so/220e7b19-ff46-46b5-934f-cc27694f7bd1/uploads/cover/93026491-99bb-4e54-b5c6-3bb672b44eae.png" />
+        <meta name="twitter:image:alt" content="Damien Henry" />
+        
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <RevalidateButton pageId={pageId} />
