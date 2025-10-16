@@ -165,6 +165,11 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
               return '/'
             }
             
+            // In dev mode (no slug mappings), use page IDs directly
+            if (slugMappings.length === 0) {
+              return `/${notionPageId}`
+            }
+            
             // Find slug for this page ID
             const mapping = slugMappings.find(m => m.pageId.replace(/-/g, '') === cleanPageId)
             if (mapping) {
@@ -182,6 +187,17 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const isDev = process.env.NODE_ENV === 'development'
+  
+  // In dev mode, skip pre-generation and generate pages on-demand
+  if (isDev) {
+    return {
+      paths: [],
+      fallback: 'blocking',
+    }
+  }
+
+  // In production, pre-generate all pages
   const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
   
   if (!rootPageId) {
@@ -198,7 +214,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     
     return {
       paths,
-      fallback: 'blocking', // Still generate new pages on-demand if added later
+      fallback: 'blocking',
     }
   } catch (error) {
     console.error('Error fetching page slugs for static paths:', error)
@@ -213,6 +229,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const notion = new NotionAPI()
   const slug = params?.pageId as string // This is actually a slug now
   const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+  const isDev = process.env.NODE_ENV === 'development'
 
   if (!slug) {
     return {
@@ -221,21 +238,32 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   }
 
   try {
-    // Get slug mappings to find the actual page ID
-    const { generateSlugMappings, getPageIdFromSlug } = await import('../lib/slugMapping')
-    const mappings = await generateSlugMappings(rootPageId)
-    const actualPageId = getPageIdFromSlug(mappings, slug)
-    
-    if (!actualPageId) {
-      return {
-        notFound: true,
+    let actualPageId: string
+    let mappings: Array<{ slug: string; pageId: string; title: string }> = []
+
+    if (isDev) {
+      // In dev mode, assume slug IS the page ID (use page IDs in URLs during dev)
+      actualPageId = slug
+    } else {
+      // In production, use slug mappings
+      const { generateSlugMappings, getPageIdFromSlug } = await import('../lib/slugMapping')
+      mappings = await generateSlugMappings(rootPageId)
+      const foundPageId = getPageIdFromSlug(mappings, slug)
+      
+      if (!foundPageId) {
+        return {
+          notFound: true,
+        }
       }
+      actualPageId = foundPageId
     }
 
     let recordMap = await notion.getPage(actualPageId)
     
-    // Download audio files and replace URLs
-    recordMap = await downloadAudioFiles(recordMap, actualPageId, notion)
+    // Skip audio download in dev mode for speed
+    if (!isDev) {
+      recordMap = await downloadAudioFiles(recordMap, actualPageId, notion)
+    }
 
     return {
       props: {
@@ -243,7 +271,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         pageId: actualPageId,
         slugMappings: mappings,
       },
-      revalidate: 3600, // Revalidate every hour to refresh Notion's signed URLs
+      revalidate: isDev ? false : 3600, // No revalidation in dev
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)

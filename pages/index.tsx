@@ -150,6 +150,11 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
               return '/'
             }
             
+            // In dev mode (no slug mappings), use page IDs directly
+            if (slugMappings.length === 0) {
+              return `/${pageId}`
+            }
+            
             // Find slug for this page ID
             const mapping = slugMappings.find(m => m.pageId.replace(/-/g, '') === cleanPageId)
             if (mapping) {
@@ -169,6 +174,7 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
 export const getStaticProps: GetStaticProps = async () => {
   const notion = new NotionAPI()
   const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+  const isDev = process.env.NODE_ENV === 'development'
 
   if (!pageId) {
     console.warn('NEXT_PUBLIC_NOTION_PAGE_ID is not set')
@@ -183,19 +189,24 @@ export const getStaticProps: GetStaticProps = async () => {
   try {
     let recordMap = await notion.getPage(pageId)
     
-    // Download audio files and replace URLs
-    recordMap = await downloadAudioFiles(recordMap, pageId, notion)
+    // Skip audio download in dev mode for speed
+    if (!isDev) {
+      recordMap = await downloadAudioFiles(recordMap, pageId, notion)
+    }
     
-    // Get slug mappings for internal links
-    const { generateSlugMappings } = await import('../lib/slugMapping')
-    const slugMappings = await generateSlugMappings(pageId)
+    // Get slug mappings for internal links (only in production)
+    let slugMappings: Array<{ slug: string; pageId: string; title: string }> = []
+    if (!isDev) {
+      const { generateSlugMappings } = await import('../lib/slugMapping')
+      slugMappings = await generateSlugMappings(pageId)
+    }
 
     return {
       props: {
         recordMap,
         slugMappings,
       },
-      revalidate: 3600, // Revalidate every hour to refresh Notion's signed URLs
+      revalidate: isDev ? false : 3600, // No revalidation in dev
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)
