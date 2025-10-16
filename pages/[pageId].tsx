@@ -31,8 +31,6 @@ interface PageProps {
 }
 
 export default function NotionPage({ recordMap, pageId, slugMappings = [] }: PageProps) {
-  const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
-  
   // Extract page title for meta tag
   const pageTitle = useMemo(() => {
     if (!recordMap) return ''
@@ -56,7 +54,7 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {revalidateSecret && <RevalidateButton pageId={pageId} secret={revalidateSecret} />}
+      <RevalidateButton pageId={pageId} />
       <Breadcrumb />
       <div style={{ paddingTop: '60px' }}>
         <main>

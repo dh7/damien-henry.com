@@ -69,24 +69,24 @@ A hidden refresh button is built into every page:
    Add to your `.env.local`:
    ```bash
    REVALIDATE_SECRET=your-secret-here
-   NEXT_PUBLIC_REVALIDATE_SECRET=your-secret-here
    ```
+   
+   Note: The secret is NOT exposed in client-side code - you enter it manually when needed.
 
 2. **Usage (3 ways):**
    
-   **A) URL Parameter (easiest):**
-   - Visit: `https://yoursite.com/?refresh=your-secret`
-   - Button appears automatically
+   **A) URL Parameter:**
+   - Visit: `https://yoursite.com/?refresh=1`
+   - Button appears with a text field - enter your secret
    
    **B) Keyboard Shortcut:**
    - Press **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows/Linux)
-   - Button appears
+   - Button appears with a text field - enter your secret
    
    **C) Bookmark:**
-   - Create a bookmark with URL: `https://yoursite.com/?refresh=your-secret`
-   - Click bookmark to show refresh button
-   
-   Then click "🔄 Refresh Page" to pull latest Notion content
+   - Create a bookmark with URL: `https://yoursite.com/?refresh=1`
+   - Click bookmark to show the refresh popup
+   - Enter your secret and click "🔄 Refresh Page" to pull latest Notion content
 
 **Option 2: API Endpoint**
 

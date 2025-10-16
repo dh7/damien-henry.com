@@ -19,9 +19,8 @@ npm install
 # Required
 NEXT_PUBLIC_NOTION_PAGE_ID=your-notion-page-id
 
-# Recommended (for hidden refresh button)
+# Recommended (for hidden refresh button - kept secure on server)
 REVALIDATE_SECRET=abc123xyz
-NEXT_PUBLIC_REVALIDATE_SECRET=abc123xyz
 
 # Optional (for production)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -31,6 +30,8 @@ Generate a secure secret:
 ```bash
 openssl rand -hex 32
 ```
+
+**Security Note:** The secret is only stored server-side and never exposed to the client. You'll enter it manually when refreshing.
 
 ## 4. Run Locally
 
@@ -45,18 +46,19 @@ Visit: http://localhost:3000
 After editing your Notion page, use any of these methods:
 
 **Method 1: URL Parameter (Easiest)**
-- Visit: `http://localhost:3000/?refresh=abc123xyz`
-- Replace `abc123xyz` with your actual secret
-- Refresh button appears automatically
+- Visit: `http://localhost:3000/?refresh=1`
+- A popup appears with a text field
+- Enter your secret and click "🔄 Refresh Page"
 
 **Method 2: Keyboard Shortcut**
 - Go to your site
 - Press **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows)
+- Enter your secret in the popup
 - Click "🔄 Refresh Page"
 
 **Method 3: Bookmark (Recommended for Production)**
-- Create browser bookmark: `https://yoursite.com/?refresh=your-secret`
-- One-click access to refresh button
+- Create browser bookmark: `https://yoursite.com/?refresh=1`
+- One-click to show the refresh popup
 
 **Method 4: Direct API Call**
 ```bash
@@ -69,8 +71,7 @@ curl "http://localhost:3000/api/revalidate?secret=abc123xyz"
 2. Import on [Vercel](https://vercel.com)
 3. Add environment variables:
    - `NEXT_PUBLIC_NOTION_PAGE_ID`
-   - `REVALIDATE_SECRET`
-   - `NEXT_PUBLIC_REVALIDATE_SECRET`
+   - `REVALIDATE_SECRET` (server-only, not exposed to client)
    - `NEXT_PUBLIC_SITE_URL` (your production URL)
 4. Deploy!
 

@@ -30,8 +30,6 @@ interface HomeProps {
 }
 
 export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
-  const revalidateSecret = process.env.NEXT_PUBLIC_REVALIDATE_SECRET || ''
-  
   return (
     <>
       <Head>
@@ -40,7 +38,7 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {revalidateSecret && <RevalidateButton secret={revalidateSecret} />}
+      <RevalidateButton />
       <Breadcrumb />
       <div style={{ paddingTop: '60px' }}>
         <main>
