@@ -182,7 +182,6 @@ export const getStaticProps: GetStaticProps = async () => {
       props: {
         recordMap: {},
       },
-      revalidate: 60,
     }
   }
 
@@ -206,7 +205,6 @@ export const getStaticProps: GetStaticProps = async () => {
         recordMap,
         slugMappings,
       },
-      revalidate: isDev ? false : 3600, // No revalidation in dev
     }
   } catch (error) {
     console.error('Error fetching Notion page:', error)
@@ -215,7 +213,6 @@ export const getStaticProps: GetStaticProps = async () => {
         recordMap: {},
         slugMappings: [],
       },
-      revalidate: 60,
     }
   }
 }

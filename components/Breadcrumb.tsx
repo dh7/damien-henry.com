@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 const XIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -19,12 +20,16 @@ const LinkedInIcon = () => (
 )
 
 export default function Breadcrumb() {
+  const router = useRouter()
   const socialLinks = [
     { name: 'X/Twitter', url: 'https://x.com/dh7net', icon: <XIcon /> },
     { name: 'GitHub', url: 'https://github.com/dh7', icon: <GitHubIcon /> },
     { name: 'LinkedIn', url: 'https://www.linkedin.com/in/damien-henr7/', icon: <LinkedInIcon /> },
   ]
 
+  // Build breadcrumb path from URL
+  const pathSegments = router.asPath.split('/').filter(Boolean)
+  
   return (
     <div style={{
       position: 'fixed',
@@ -44,18 +49,50 @@ export default function Breadcrumb() {
       justifyContent: 'space-between',
       boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
     }}>
-      <Link href="/" style={{ 
-        color: '#000',
-        textDecoration: 'none',
-        fontWeight: 600,
-        transition: 'color 0.2s',
+      <div style={{ 
         display: 'flex',
         alignItems: 'center',
-        gap: '6px'
+        gap: '8px'
       }}>
-        <span>👋</span>
-        <span>Damien Henry</span>
-      </Link>
+        <Link href="/" style={{ 
+          color: '#000',
+          textDecoration: 'none',
+          fontWeight: 600,
+          transition: 'color 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <span>👋</span>
+          <span>Damien Henry</span>
+        </Link>
+        
+        {pathSegments.length > 0 && pathSegments.map((segment, index) => {
+          const path = '/' + pathSegments.slice(0, index + 1).join('/')
+          const isLast = index === pathSegments.length - 1
+          const displayName = segment
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+          
+          return (
+            <div key={path} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#999' }}>/</span>
+              {isLast ? (
+                <span style={{ color: '#666' }}>{displayName}</span>
+              ) : (
+                <Link href={path} style={{ 
+                  color: '#666',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s',
+                }}>
+                  {displayName}
+                </Link>
+              )}
+            </div>
+          )
+        })}
+      </div>
 
       <div style={{
         display: 'flex',

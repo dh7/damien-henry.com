@@ -1,7 +1,6 @@
 import { GetServerSideProps } from 'next'
-import { NotionAPI } from 'notion-client'
 
-function generateSiteMap(pageIds: string[]) {
+function generateSiteMap(slugs: string[]) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://damien-henry.com'
   
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -11,11 +10,11 @@ function generateSiteMap(pageIds: string[]) {
        <changefreq>daily</changefreq>
        <priority>1.0</priority>
      </url>
-     ${pageIds
-       .map((id) => {
+     ${slugs
+       .map((slug) => {
          return `
        <url>
-         <loc>${baseUrl}/${id}</loc>
+         <loc>${baseUrl}/${slug}</loc>
          <changefreq>daily</changefreq>
          <priority>0.8</priority>
        </url>
@@ -27,24 +26,19 @@ function generateSiteMap(pageIds: string[]) {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
-  const notion = new NotionAPI()
   const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
-  const pageIds: string[] = []
+  const slugs: string[] = []
 
   try {
-    const recordMap = await notion.getPage(rootPageId)
+    const { generateSlugMappings } = await import('../lib/slugMapping')
+    const mappings = await generateSlugMappings(rootPageId)
     
-    Object.keys(recordMap.block).forEach((blockId) => {
-      const block = recordMap.block[blockId]?.value
-      if (block && block.type === 'page' && blockId !== rootPageId) {
-        pageIds.push(blockId)
-      }
-    })
+    slugs.push(...mappings.map(m => m.slug))
   } catch (error) {
     console.error('Error generating sitemap:', error)
   }
 
-  const sitemap = generateSiteMap(pageIds)
+  const sitemap = generateSiteMap(slugs)
 
   res.setHeader('Content-Type', 'text/xml')
   res.write(sitemap)

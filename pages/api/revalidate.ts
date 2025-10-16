@@ -15,13 +15,22 @@ export default async function handler(
     const { path, pageId } = req.query
 
     if (pageId && typeof pageId === 'string') {
-      // Revalidate specific page
-      await res.revalidate(`/${pageId}`)
-      return res.json({ 
-        revalidated: true, 
-        path: `/${pageId}`,
-        timestamp: new Date().toISOString()
-      })
+      // Convert pageId to nested slug path
+      const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+      const { generateSlugMappings, getSlugFromPageId } = await import('../../lib/slugMapping')
+      const mappings = await generateSlugMappings(rootPageId)
+      const slug = getSlugFromPageId(mappings, pageId)
+      
+      if (slug) {
+        await res.revalidate(`/${slug}`)
+        return res.json({ 
+          revalidated: true, 
+          path: `/${slug}`,
+          timestamp: new Date().toISOString()
+        })
+      } else {
+        return res.status(404).json({ message: 'Page not found' })
+      }
     }
 
     if (path && typeof path === 'string') {
