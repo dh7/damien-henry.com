@@ -7,6 +7,8 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
 import Breadcrumb from '@/components/Breadcrumb'
+import { useTheme } from 'next-themes'
+import { useState, useEffect } from 'react'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -97,6 +99,15 @@ async function downloadAudioFiles(recordMap: any, pageId: string, notion: any): 
 }
 
 export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  const isDark = mounted && resolvedTheme === 'dark'
+  
   return (
     <>
       <Head>
@@ -126,12 +137,13 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
       </Head>
       <RevalidateButton />
       <Breadcrumb />
-      <div style={{ paddingTop: '60px' }}>
+      <div style={{ paddingTop: '50px' }}>
         <main>
         <NotionRenderer
+          key={`notion-${isDark ? 'dark' : 'light'}`}
           recordMap={recordMap}
           fullPage={true}
-          darkMode={false}
+          darkMode={isDark}
           disableHeader={true}
           components={{
             Code,

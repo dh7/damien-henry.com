@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { ThemeProvider } from 'next-themes'
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
 import 'katex/dist/katex.min.css'
@@ -89,6 +90,10 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [router])
 
-  return <Component {...pageProps} />
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="theme">
+      <Component {...pageProps} />
+    </ThemeProvider>
+  )
 }
 

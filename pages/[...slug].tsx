@@ -6,7 +6,8 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
 import Breadcrumb from '@/components/Breadcrumb'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -98,6 +99,15 @@ async function downloadAudioFiles(recordMap: any, pageId: string, notion: any): 
 }
 
 export default function NotionPage({ recordMap, pageId, slugMappings = [] }: PageProps) {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  const isDark = mounted && resolvedTheme === 'dark'
+  
   // Extract page title for meta tag
   const pageTitle = useMemo(() => {
     if (!recordMap) return ''
@@ -141,12 +151,13 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
       </Head>
       <RevalidateButton pageId={pageId} />
       <Breadcrumb />
-      <div style={{ paddingTop: '60px' }}>
+      <div style={{ paddingTop: '50px' }}>
         <main>
         <NotionRenderer
+          key={`notion-${isDark ? 'dark' : 'light'}`}
           recordMap={recordMap}
           fullPage={true}
-          darkMode={false}
+          darkMode={isDark}
           disableHeader={true}
           components={{
             Code,

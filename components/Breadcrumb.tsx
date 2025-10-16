@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import ThemeToggle from './ThemeToggle'
 
 const XIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -31,38 +32,9 @@ export default function Breadcrumb() {
   const pathSegments = router.asPath.split('/').filter(Boolean)
   
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.98)',
-      backdropFilter: 'saturate(180%) blur(20px)',
-      WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-      padding: '14px 24px',
-      zIndex: 1000,
-      fontFamily: 'Poppins, sans-serif',
-      fontSize: '15px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-    }}>
-      <div style={{ 
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }}>
-        <Link href="/" style={{ 
-          color: '#000',
-          textDecoration: 'none',
-          fontWeight: 600,
-          transition: 'color 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}>
+    <div className="breadcrumb-header">
+      <div className="breadcrumb-nav">
+        <Link href="/" className="breadcrumb-home">
           <span>👋</span>
           <span>Damien Henry</span>
         </Link>
@@ -76,16 +48,12 @@ export default function Breadcrumb() {
             .join(' ')
           
           return (
-            <div key={path} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#999' }}>/</span>
+            <div key={path} className="breadcrumb-item">
+              <span className="breadcrumb-separator">/</span>
               {isLast ? (
-                <span style={{ color: '#666' }}>{displayName}</span>
+                <span className="breadcrumb-current">{displayName}</span>
               ) : (
-                <Link href={path} style={{ 
-                  color: '#666',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s',
-                }}>
+                <Link href={path} className="breadcrumb-link">
                   {displayName}
                 </Link>
               )}
@@ -94,11 +62,7 @@ export default function Breadcrumb() {
         })}
       </div>
 
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px'
-      }}>
+      <div className="breadcrumb-social">
         {socialLinks.map((link) => (
           <a
             key={link.name}
@@ -106,19 +70,12 @@ export default function Breadcrumb() {
             target="_blank"
             rel="noopener noreferrer"
             title={link.name}
-            style={{
-              color: '#666',
-              textDecoration: 'none',
-              transition: 'color 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#000'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
+            className="breadcrumb-social-link"
           >
             {link.icon}
           </a>
         ))}
+        <ThemeToggle />
       </div>
     </div>
   )
