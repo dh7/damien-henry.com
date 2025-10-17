@@ -245,7 +245,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
   const isDev = process.env.NODE_ENV === 'development'
 
-  if (!fullSlug) {
+  // Filter out Next.js internal files (hot-update, static assets, etc.)
+  if (!fullSlug || fullSlug.includes('_next') || fullSlug.includes('.json') || fullSlug.includes('webpack')) {
     return {
       notFound: true,
     }
