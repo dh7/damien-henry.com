@@ -6,7 +6,6 @@ import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
-import Breadcrumb from '@/components/Breadcrumb'
 import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
 
@@ -136,9 +135,7 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
         <link rel="icon" href="/favicon.png" />
       </Head>
       <RevalidateButton />
-      <Breadcrumb />
-      <div style={{ paddingTop: '50px' }}>
-        <main>
+      <main className="p-8">
         <NotionRenderer
           key={`notion-${isDark ? 'dark' : 'light'}`}
           recordMap={recordMap}
@@ -177,8 +174,7 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
             return `/${pageId}`
           }}
         />
-        </main>
-      </div>
+      </main>
     </>
   )
 }

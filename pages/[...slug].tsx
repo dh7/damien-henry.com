@@ -5,7 +5,6 @@ import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
-import Breadcrumb from '@/components/Breadcrumb'
 import { useMemo, useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
 
@@ -150,9 +149,7 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
         <link rel="icon" href="/favicon.png" />
       </Head>
       <RevalidateButton pageId={pageId} />
-      <Breadcrumb />
-      <div style={{ paddingTop: '50px' }}>
-        <main>
+      <main className="p-8">
         <NotionRenderer
           key={`notion-${isDark ? 'dark' : 'light'}`}
           recordMap={recordMap}
@@ -191,8 +188,7 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
             return `/${notionPageId}`
           }}
         />
-        </main>
-      </div>
+      </main>
     </>
   )
 }

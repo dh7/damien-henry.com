@@ -1,3 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --breakpoint-*: initial;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -155,14 +162,9 @@ span.notion-link-mention-provider {
 
 /* Breadcrumb header */
 .breadcrumb-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   background-color: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   padding: 14px 24px;
-  z-index: 1000;
   font-family: 'Poppins', sans-serif;
   font-size: 15px;
   display: flex;
@@ -267,10 +269,6 @@ span.notion-link-mention-provider {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Ensure body doesn't scroll under fixed breadcrumb */
-body {
-  position: relative;
-}
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
@@ -421,6 +419,43 @@ lite-youtube:hover > .lty-playbtn {
 .dark .notion-link-mention-preview-content {
   background: #2f2f2f !important;
   background-color: #2f2f2f !important;
+}
+
+/* Chat interface and main content backgrounds */
+.chat-interface-bg {
+  background-color: #fefefe;
+}
+
+.dark .chat-interface-bg {
+  background-color: #191919;
+}
+
+.main-content-bg {
+  background-color: #fefefe;
+}
+
+.dark .main-content-bg {
+  background-color: #191919;
+}
+
+/* Almost white background for Notion content in light mode */
+.notion,
+.notion-page,
+.notion-full-page,
+.notion-page-content,
+.notion-page-content-inner {
+  background: #fefefe !important;
+  background-color: #fefefe !important;
+}
+
+/* Match chat background for Notion content in dark mode */
+.dark .notion,
+.dark .notion-page,
+.dark .notion-full-page,
+.dark .notion-page-content,
+.dark .notion-page-content-inner {
+  background: #191919 !important;
+  background-color: #191919 !important;
 }
 
 
