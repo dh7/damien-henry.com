@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { MindCache } from 'mindcache';
+import { useState } from 'react';
+import { useMindCache } from '@/lib/MindCacheContext';
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
   status: string;
-  mindcacheInstance?: MindCache; // Custom MindCache instance (for isolated STM)
 }
 
-export default function ChatInput({ onSendMessage, status, mindcacheInstance }: ChatInputProps) {
-  const defaultInstance = useRef(new MindCache());
-  const mindcacheRef = mindcacheInstance || defaultInstance.current;
+export default function ChatInput({ onSendMessage, status }: ChatInputProps) {
+  const mindcacheRef = useMindCache();
   const [input, setInput] = useState('');
   
   // Track loading state based on status

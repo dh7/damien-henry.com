@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { MindCache } from 'mindcache';
+import { useState } from 'react';
+import { useMindCache } from '@/lib/MindCacheContext';
 import ChatConversation from './ChatConversation';
 import ChatInput from './ChatInput';
 
@@ -11,13 +11,8 @@ interface Message {
   content: string;
 }
 
-interface ChatInterfaceProps {
-  mindcacheInstance?: MindCache;
-}
-
-export default function ChatInterface({ mindcacheInstance }: ChatInterfaceProps) {
-  const defaultInstance = useRef(new MindCache());
-  const mindcacheRef = mindcacheInstance || defaultInstance.current;
+export default function ChatInterface() {
+  const mindcacheRef = useMindCache();
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -84,7 +79,6 @@ export default function ChatInterface({ mindcacheInstance }: ChatInterfaceProps)
       <ChatInput 
         onSendMessage={handleSendMessage}
         status={isLoading ? 'loading' : 'ready'}
-        mindcacheInstance={mindcacheRef}
       />
     </div>
   );

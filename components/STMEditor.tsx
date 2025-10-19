@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { mindcache } from 'mindcache';
+import { useState, useCallback, useEffect } from 'react';
+import { useMindCache } from '@/lib/MindCacheContext';
 
 // Type definitions
 interface STMEditorProps {
@@ -10,8 +10,8 @@ interface STMEditorProps {
 }
 
 export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps) {
-  const mindcacheRef = useRef(mindcache);
-  const [stmState, setSTMState] = useState(mindcacheRef.current.getAll());
+  const mindcacheRef = useMindCache();
+  const [stmState, setSTMState] = useState(mindcacheRef.getAll());
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [editingAttributes, setEditingAttributes] = useState<string | null>(null);
@@ -30,22 +30,22 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
 
   // Subscribe to STM changes to update UI
   const updateSTMState = useCallback(() => {
-    setSTMState(mindcacheRef.current.getAll());
+    setSTMState(mindcacheRef.getAll());
     if (onSTMChange) {
       onSTMChange();
     }
-  }, [onSTMChange]);
+  }, [onSTMChange, mindcacheRef]);
 
   // Subscribe to all STM changes on mount
   useEffect(() => {
-    mindcacheRef.current.subscribeToAll(updateSTMState);
-    return () => mindcacheRef.current.unsubscribeFromAll(updateSTMState);
-  }, [updateSTMState]);
+    mindcacheRef.subscribeToAll(updateSTMState);
+    return () => mindcacheRef.unsubscribeFromAll(updateSTMState);
+  }, [updateSTMState, mindcacheRef]);
 
   // Handle file upload
   const handleFileUpload = async (key: string, file: File) => {
     try {
-      await mindcacheRef.current.set_file(key, file);
+      await mindcacheRef.set_file(key, file);
       console.log(`✅ File uploaded to ${key}:`, file.name);
     } catch (error) {
       console.error('❌ Failed to upload file:', error);
@@ -56,7 +56,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
 
   // Delete an STM key
   const deleteSTMKey = (key: string) => {
-    mindcacheRef.current.delete(key);
+    mindcacheRef.delete(key);
   };
 
   // Start editing a field
@@ -76,7 +76,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
         } catch {
           parsedValue = editingValue;
         }
-        mindcacheRef.current.set_value(editingKey, parsedValue);
+        mindcacheRef.set_value(editingKey, parsedValue);
         setEditingKey(null);
         setEditingValue('');
       } catch (error) {
@@ -93,7 +93,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
 
   // Start editing attributes
   const startEditingAttributes = (key: string) => {
-    const attributes = mindcacheRef.current.get_attributes(key);
+    const attributes = mindcacheRef.get_attributes(key);
     if (attributes) {
       setAttributesForm({
         readonly: attributes.readonly,
@@ -102,7 +102,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
         template: attributes.template,
         type: attributes.type,
         contentType: attributes.contentType || '',
-        tags: mindcacheRef.current.getTags(key)
+        tags: mindcacheRef.getTags(key)
       });
     } else {
       // Default attributes for new keys
@@ -137,39 +137,39 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
       // If key name changed, we need to create new entry and delete old one
       if (newKey && newKey !== oldKey) {
         // Don't allow renaming to existing key or system keys
-        if (mindcacheRef.current.has(newKey) || newKey.startsWith('$')) {
+        if (mindcacheRef.has(newKey) || newKey.startsWith('$')) {
           alert(`Key "${newKey}" already exists or is a system key`);
           return;
         }
         
         // Get current value
-        const currentValue = mindcacheRef.current.get_value(oldKey);
+        const currentValue = mindcacheRef.get_value(oldKey);
         
         // Create new entry with new name (excluding tags from attributes)
         const { tags: _, ...attributesWithoutTags } = attributesForm;
         void _; // Mark as intentionally unused
-        mindcacheRef.current.set_value(newKey, currentValue, attributesWithoutTags);
+        mindcacheRef.set_value(newKey, currentValue, attributesWithoutTags);
         
         // Set tags separately (using final tags)
         finalTags.forEach(tag => {
-          mindcacheRef.current.addTag(newKey, tag);
+          mindcacheRef.addTag(newKey, tag);
         });
         
         // Delete old entry
-        mindcacheRef.current.delete(oldKey);
+        mindcacheRef.delete(oldKey);
       } else {
         // Just update attributes (excluding tags)
         const { tags: _, ...attributesWithoutTags } = attributesForm;
         void _; // Mark as intentionally unused
-        mindcacheRef.current.set_attributes(oldKey, attributesWithoutTags);
+        mindcacheRef.set_attributes(oldKey, attributesWithoutTags);
         
         // Update tags - remove all existing tags and add new ones (using final tags)
-        const existingTags = mindcacheRef.current.getTags(oldKey);
+        const existingTags = mindcacheRef.getTags(oldKey);
         existingTags.forEach(tag => {
-          mindcacheRef.current.removeTag(oldKey, tag);
+          mindcacheRef.removeTag(oldKey, tag);
         });
         finalTags.forEach(tag => {
-          mindcacheRef.current.addTag(oldKey, tag);
+          mindcacheRef.addTag(oldKey, tag);
         });
       }
       
@@ -213,7 +213,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
     
     // Update suggestions based on input
     if (value.trim()) {
-      const allTags = mindcacheRef.current.getAllTags();
+      const allTags = mindcacheRef.getAllTags();
       const filtered = allTags.filter((tag: string) => 
         tag.toLowerCase().includes(value.toLowerCase()) &&
         !attributesForm.tags.includes(tag)
@@ -265,12 +265,12 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
                   return true;
                 }
                 // Show key if it has ANY of the selected tags (OR logic)
-                const keyTags = mindcacheRef.current.getTags(key);
+                const keyTags = mindcacheRef.getTags(key);
                 return selectedTags.some(selectedTag => keyTags.includes(selectedTag));
               })
               .map(([key, value]) => {
               const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
-              const attributes = mindcacheRef.current.get_attributes(key);
+              const attributes = mindcacheRef.get_attributes(key);
               const isSystemKey = key.startsWith('$');
               const contentType = attributes?.type || 'text';
               
@@ -281,7 +281,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
               if (isEmpty) {
                 displayValue = '_______';
               } else if (contentType === 'image') {
-                const dataUrl = mindcacheRef.current.get_data_url(key);
+                const dataUrl = mindcacheRef.get_data_url(key);
                 displayValue = `[IMAGE: ${attributes?.contentType || 'unknown'}]`;
                 isPreviewable = !!dataUrl;
               } else if (contentType === 'file') {
@@ -299,7 +299,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
               
               // Create property indicators
               const indicators = [];
-              const tags = mindcacheRef.current.getTags(key);
+              const tags = mindcacheRef.getTags(key);
               if (attributes) {
                 // Add type indicator
                 if (contentType !== 'text') {
@@ -411,7 +411,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
                       {contentType === 'image' && isPreviewable && (
                         <div className="mt-2 max-w-xs">
                           <img 
-                            src={mindcacheRef.current.get_data_url(key)} 
+                            src={mindcacheRef.get_data_url(key)} 
                             alt={`Preview of ${key}`}
                             className="max-w-full h-auto border border-gray-600 rounded"
                             style={{ maxHeight: '200px' }}

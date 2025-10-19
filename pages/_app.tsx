@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import Layout from '@/components/Layout'
+import { MindCacheProvider } from '@/lib/MindCacheContext'
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
 import 'katex/dist/katex.min.css'
@@ -93,9 +94,11 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="theme">
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <MindCacheProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </MindCacheProvider>
     </ThemeProvider>
   )
 }
