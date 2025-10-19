@@ -435,4 +435,13 @@ lite-youtube:hover > .lty-playbtn {
   background-color: #2f2f2f !important;
 }
 
+/* Hide Notion cover images (used only for OpenGraph metadata) */
+.notion-page-cover,
+.notion-page-cover-wrapper {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
