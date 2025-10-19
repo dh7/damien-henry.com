@@ -217,6 +217,12 @@ span.notion-link-mention-provider {
 
 .breadcrumb-current {
   color: #666;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .dark .breadcrumb-current {
@@ -227,6 +233,12 @@ span.notion-link-mention-provider {
   color: #666;
   text-decoration: none;
   transition: color 0.2s;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .dark .breadcrumb-link {
