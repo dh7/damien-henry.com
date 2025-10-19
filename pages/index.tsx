@@ -61,25 +61,25 @@ export default function Home({ recordMap, slugMappings = [] }: HomeProps) {
     <>
       <Head>
         <title>Damien Henry</title>
-        <meta name="description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <meta name="description" content="This website contains resources about Damien Henry, Startups and Artificial Intelligence." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Damien Henry" />
-        <meta property="og:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <meta property="og:description" content="This website contains resources about Damien Henry, Startups and Artificial Intelligence." />
         <meta property="og:url" content="https://damien-henry.com" />
         <meta property="og:site_name" content="Damien Henry" />
         <meta property="og:locale" content="en-US" />
-        <meta property="og:image" content="https://damien-henry.com/og-image.png" />
+        <meta property="og:image" content="https://damien-henry.com/opengraph-image.png" />
         <meta property="og:image:alt" content="Damien Henry" />
         <meta property="og:type" content="website" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Damien Henry" />
-        <meta name="twitter:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
-        <meta name="twitter:image" content="https://damien-henry.com/og-image.png" />
+        <meta name="twitter:description" content="This website contains resources about Damien Henry, Startups and Artificial Intelligence." />
+        <meta name="twitter:image" content="https://damien-henry.com/twitter-image.png" />
         <meta name="twitter:image:alt" content="Damien Henry" />
         
         <link rel="icon" href="/favicon.png" />

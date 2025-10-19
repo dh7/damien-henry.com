@@ -29,6 +29,12 @@ interface PageProps {
   recordMap: any
   pageId: string
   slugMappings?: Array<{ slug: string; pageId: string; title: string; parentSlug: string | null }>
+  pageMetadata?: {
+    title: string
+    description: string
+    coverImage: string
+    url: string
+  }
 }
 
 // Replace audio URLs with the fixed local audio file
@@ -47,7 +53,7 @@ function replaceAudioUrls(recordMap: any): any {
   return modifiedRecordMap
 }
 
-export default function NotionPage({ recordMap, pageId, slugMappings = [] }: PageProps) {
+export default function NotionPage({ recordMap, pageId, slugMappings = [], pageMetadata }: PageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   
@@ -57,8 +63,8 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
   
   const isDark = mounted && resolvedTheme === 'dark'
   
-  // Extract page title for meta tag
-  const pageTitle = useMemo(() => {
+  // Use pageMetadata if available, otherwise extract from recordMap
+  const pageTitle = pageMetadata?.title || useMemo(() => {
     if (!recordMap) return ''
     const cleanPageId = pageId.replace(/-/g, '')
     const block = recordMap.block?.[cleanPageId]?.value
@@ -72,29 +78,38 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [] }: Pag
     return <div>Loading...</div>
   }
 
+  const defaultDescription = "This website contains resources about Damien Henry, Startups and Artificial Intelligence."
+  const defaultImage = "https://damien-henry.com/opengraph-image.png"
+  
+  const metaTitle = pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'
+  const metaDescription = pageMetadata?.description || defaultDescription
+  const metaImage = pageMetadata?.coverImage || defaultImage
+  const metaUrl = pageMetadata?.url || 'https://damien-henry.com'
+
   return (
     <>
       <Head>
-        <title>{pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'}</title>
-        <meta name="description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
         
         {/* Open Graph */}
-        <meta property="og:title" content={pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'} />
-        <meta property="og:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
         <meta property="og:site_name" content="Damien Henry" />
         <meta property="og:locale" content="en-US" />
-        <meta property="og:image" content="https://damien-henry.com/og-image.png" />
-        <meta property="og:image:alt" content="Damien Henry" />
+        <meta property="og:url" content={metaUrl} />
+        <meta property="og:image" content={metaImage} />
+        <meta property="og:image:alt" content={pageTitle || 'Damien Henry'} />
         <meta property="og:type" content="article" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={pageTitle ? `${pageTitle} - Damien Henry` : 'Damien Henry'} />
-        <meta name="twitter:description" content="This website contains resources about Damien Henry, Machine Learning, Startups and book summaries." />
-        <meta name="twitter:image" content="https://damien-henry.com/og-image.png" />
-        <meta name="twitter:image:alt" content="Damien Henry" />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={metaImage} />
+        <meta name="twitter:image:alt" content={pageTitle || 'Damien Henry'} />
         
         <link rel="icon" href="/favicon.png" />
       </Head>
@@ -227,11 +242,61 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     // Replace audio URLs with fixed file
     recordMap = replaceAudioUrls(recordMap)
 
+    // Extract metadata for OpenGraph
+    const cleanPageId = actualPageId.replace(/-/g, '')
+    const block = recordMap.block?.[cleanPageId]?.value
+    
+    let title = ''
+    let description = ''
+    let coverImage = 'https://damien-henry.com/og-image.png'
+    
+    if (block) {
+      // Extract title
+      if (block.properties?.title) {
+        title = block.properties.title[0]?.[0] || ''
+      }
+      
+      // Extract description from page content (first text block)
+      const blockIds = Object.keys(recordMap.block)
+      for (const id of blockIds) {
+        const contentBlock = recordMap.block[id]?.value
+        if (contentBlock?.type === 'text' && contentBlock?.properties?.title) {
+          const text = contentBlock.properties.title
+            .map((t: any) => t[0])
+            .join('')
+            .slice(0, 160)
+          if (text) {
+            description = text
+            break
+          }
+        }
+      }
+      
+      // Extract cover image
+      if (block.format?.page_cover) {
+        coverImage = block.format.page_cover.startsWith('/')
+          ? `https://www.notion.so${block.format.page_cover}`
+          : block.format.page_cover
+      }
+    }
+    
+    // Construct URL
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://damien-henry.com'
+    const url = isDev 
+      ? `${baseUrl}/${fullSlug}`
+      : `${baseUrl}/${fullSlug}`
+
     return {
       props: {
         recordMap,
         pageId: actualPageId,
         slugMappings: mappings,
+        pageMetadata: {
+          title,
+          description,
+          coverImage,
+          url,
+        },
       },
     }
   } catch (error) {
