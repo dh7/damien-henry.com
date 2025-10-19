@@ -63,16 +63,19 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [], pageM
   
   const isDark = mounted && resolvedTheme === 'dark'
   
-  // Use pageMetadata if available, otherwise extract from recordMap
-  const pageTitle = pageMetadata?.title || useMemo(() => {
+  // Extract page title
+  const pageTitle = useMemo(() => {
+    // Use pageMetadata if available
+    if (pageMetadata?.title) return pageMetadata.title
+    
+    // Otherwise extract from recordMap
     if (!recordMap) return ''
-    const cleanPageId = pageId.replace(/-/g, '')
-    const block = recordMap.block?.[cleanPageId]?.value
+    const block = recordMap.block?.[pageId]?.value
     if (block && 'properties' in block && block.properties?.title) {
       return block.properties.title[0]?.[0] || ''
     }
     return ''
-  }, [recordMap, pageId])
+  }, [recordMap, pageId, pageMetadata?.title])
   
   if (!recordMap) {
     return <div>Loading...</div>
@@ -243,12 +246,11 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     recordMap = replaceAudioUrls(recordMap)
 
     // Extract metadata for OpenGraph
-    const cleanPageId = actualPageId.replace(/-/g, '')
-    const block = recordMap.block?.[cleanPageId]?.value
+    const block = recordMap.block?.[actualPageId]?.value
     
     let title = ''
     let description = ''
-    let coverImage = 'https://damien-henry.com/og-image.png'
+    let coverImage = 'https://damien-henry.com/opengraph-image.png'
     
     if (block) {
       // Extract title
@@ -274,9 +276,24 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       
       // Extract cover image
       if (block.format?.page_cover) {
-        coverImage = block.format.page_cover.startsWith('/')
-          ? `https://www.notion.so${block.format.page_cover}`
-          : block.format.page_cover
+        const cover = block.format.page_cover
+        if (cover.startsWith('http')) {
+          // Already a full URL
+          coverImage = cover
+        } else if (cover.startsWith('/')) {
+          // Relative Notion URL
+          coverImage = `https://www.notion.so${cover}`
+        } else if (cover.startsWith('attachment:')) {
+          // Attachment format: attachment:uuid:filename
+          const parts = cover.split(':')
+          if (parts.length >= 2) {
+            const attachmentId = parts[1]
+            // Convert to Notion CDN URL
+            coverImage = `https://www.notion.so/image/${encodeURIComponent(cover)}?table=block&id=${actualPageId}`
+          }
+        } else {
+          coverImage = cover
+        }
       }
     }
     
