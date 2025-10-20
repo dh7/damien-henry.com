@@ -62,12 +62,15 @@ export async function generatePageContent(rootPageId: string): Promise<PageConte
   const notion = new NotionAPI();
   const pageContents: PageContent[] = [];
   const processedPages = new Set<string>();
+  // Check for production indicators (VERCEL, production NODE_ENV)
+  const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+  const isDev = !isProduction;
   
   // Import slug mapping
   const { generateSlugMappings } = await import('./slugMapping');
   const slugMappings = await generateSlugMappings(rootPageId);
   
-  console.log('🔍 Extracting content from pages...');
+  console.log(`🔍 Extracting content from pages (${isDev ? 'DEV' : 'PROD'} mode)...`);
   
   // Process root page
   try {
@@ -77,7 +80,7 @@ export async function generatePageContent(rootPageId: string): Promise<PageConte
     
     pageContents.push({
       pageId: rootPageId,
-      slug: '/',
+      slug: '/', // Root is always /
       title: rootMapping?.title || 'Home',
       content: content
     });
@@ -103,14 +106,18 @@ export async function generatePageContent(rootPageId: string): Promise<PageConte
       const recordMap = await notion.getPage(mapping.pageId);
       const content = extractTextFromRecordMap(recordMap);
       
+      // In dev mode, use page ID as slug (that's what Next.js expects)
+      // In production, use the friendly slug
+      const urlSlug = isDev ? mapping.pageId : mapping.slug;
+      
       pageContents.push({
         pageId: mapping.pageId,
-        slug: mapping.slug,
+        slug: urlSlug,
         title: mapping.title,
         content: content
       });
       
-      console.log(`  ✅ /${mapping.slug} (${content.length} chars)`);
+      console.log(`  ✅ /${urlSlug} (${content.length} chars)`);
     } catch (error) {
       console.error(`  ❌ Error processing ${mapping.slug}:`, error);
     }
