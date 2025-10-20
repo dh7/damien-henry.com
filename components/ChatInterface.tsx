@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useMindCache } from '@/lib/MindCacheContext';
 import ChatConversation from './ChatConversation';
 import ChatInput from './ChatInput';
@@ -13,6 +14,7 @@ interface Message {
 
 export default function ChatInterface() {
   const mindcacheRef = useMindCache();
+  const router = useRouter();
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -52,13 +54,28 @@ export default function ChatInterface() {
       }
 
       const data = await response.json();
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.message || 'No response'
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Check if we should navigate
+      if (data.navigate) {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.message || `Taking you to ${data.navigate.page_title}...`
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        
+        // Navigate after showing message
+        setTimeout(() => {
+          router.push(data.navigate.url);
+        }, 800);
+      } else {
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.message || 'No response'
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {

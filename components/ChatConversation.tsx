@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 
 interface Message {
   id: string;
@@ -52,8 +53,16 @@ function parseMarkdownLinks(text: string): (string | JSX.Element)[] {
 }
 
 export default function ChatConversation({ messages }: ChatConversationProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="flex-1 overflow-y-auto space-y-6" style={{ fontFamily: 'monospace', fontSize: '14px', padding: '16px' }}>
+    <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-6" style={{ fontFamily: 'monospace', fontSize: '14px', padding: '16px' }}>
       {messages.map((message) => (
         <div key={message.id} className="flex items-start gap-2">
           <span className={`flex-shrink-0 ${

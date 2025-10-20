@@ -62,9 +62,10 @@ export async function generatePageContent(rootPageId: string): Promise<PageConte
   const notion = new NotionAPI();
   const pageContents: PageContent[] = [];
   const processedPages = new Set<string>();
-  // Check for production indicators (VERCEL, production NODE_ENV)
-  const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
-  const isDev = !isProduction;
+  // Always use production slugs unless explicitly in local dev
+  // During Vercel builds, we want friendly slugs, not page IDs
+  const isDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL;
+  const isProduction = !isDev;
   
   // Import slug mapping
   const { generateSlugMappings } = await import('./slugMapping');
