@@ -12,7 +12,30 @@ export default async function handler(
   }
 
   try {
-    const { path, pageId } = req.query
+    const { path, pageId, all } = req.query
+
+    // Revalidate all pages
+    if (all === 'true') {
+      const rootPageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID || ''
+      const { generateSlugMappings } = await import('../../lib/slugMapping')
+      const mappings = await generateSlugMappings(rootPageId)
+      
+      // Revalidate homepage
+      await res.revalidate('/')
+      
+      // Revalidate all mapped pages
+      const revalidationPromises = mappings.map(mapping => 
+        res.revalidate(`/${mapping.slug}`)
+      )
+      
+      await Promise.all(revalidationPromises)
+      
+      return res.json({ 
+        revalidated: true, 
+        revalidatedCount: mappings.length + 1, // +1 for homepage
+        timestamp: new Date().toISOString()
+      })
+    }
 
     if (pageId && typeof pageId === 'string') {
       // Convert pageId to nested slug path

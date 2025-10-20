@@ -49,14 +49,26 @@ After editing your Notion page, use any of these methods:
 
 **Method 1: URL Parameter (Easiest)**
 - Visit: `http://localhost:3000/?refresh=1`
-- A popup appears with a text field
-- Enter your secret and click "🔄 Refresh Page"
+- A popup appears with options:
+  - Enter your secret
+  - **Revalidate all pages** - Refresh all cached pages (fast, ~5-10s)
+  - **Regenerate content (full rebuild)** - Rebuild + update chatbot content (slow, ~2-3 min)
+- Click the appropriate button
 
 **Method 2: Keyboard Shortcut**
 - Go to your site
 - Press **Cmd+Shift+R** (Mac) or **Ctrl+Shift+R** (Windows)
 - Enter your secret in the popup
-- Click "🔄 Refresh Page"
+- Select options as needed
+- Click refresh button
+
+**Refresh Options Explained:**
+
+| Option | What it does | Speed | Chatbot Updated? |
+|--------|-------------|-------|------------------|
+| Single page (default) | Refresh current page only | ~1s | ❌ No |
+| Revalidate all pages | Refresh all 37 pages | ~5-10s | ❌ No |
+| Regenerate content | Full rebuild + content extraction | ~2-3 min | ✅ Yes |
 
 **Method 3: Bookmark (Recommended for Production)**
 - Create browser bookmark: `https://yoursite.com/?refresh=1`
@@ -64,7 +76,14 @@ After editing your Notion page, use any of these methods:
 
 **Method 4: Direct API Call**
 ```bash
+# Refresh single page
 curl "http://localhost:3000/api/revalidate?secret=abc123xyz"
+
+# Refresh all pages
+curl "http://localhost:3000/api/revalidate?secret=abc123xyz&all=true"
+
+# Full rebuild (regenerate content)
+curl "http://localhost:3000/api/rebuild?secret=abc123xyz"
 ```
 
 ## 6. MindCache STM with Page Content
