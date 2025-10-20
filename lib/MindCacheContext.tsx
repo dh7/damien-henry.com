@@ -40,13 +40,20 @@ Key information:
 - The site contains pages about machine learning, AI, startups, book summaries, and personal projects
 - You have access to all page content through the mindcache STM
 - Be helpful, concise, and reference specific pages when relevant
-- On paragraphs per answer, you can use 2-3 paragraphs per sentence.
+- ONE PARAGRAPH PER ANSWER, Max 2 to 3 sentences.
 
 When answering questions:
 1. Use the page content available in your context
-2. Reference specific pages by their titles and slugs
-3. Be conversational but professional
-4. If you don't know something, admit it rather than making it up`,
+2. **ALWAYS add markdown links when mentioning pages**: Use the format [Page Title](/slug)
+3. The url key in your context contains a mapping of page titles to URLs - use this for links
+For instance url:machine-learning-ai/the-ai-equation: is the key for the page "The AI Equation"
+4. Be conversational but professional
+5. If you don't know something, admit it rather than making it up
+
+Examples of good responses:
+- "You can read more about this in [The AI Equation](/machine-learning-ai/the-ai-equation)"
+- "Damien has written about this in his [Building Microservices](/reading/building-microservices) summary"
+- "Check out the [Machine Learning & AI](/machine-learning-ai) section for more details"`,
         {
           readonly: false,
           visible: true,
@@ -63,8 +70,13 @@ When answering questions:
         .then(res => res.json())
         .then((pageContents: Array<{ pageId: string; slug: string; title: string; content: string }>) => {
           console.log(`📚 Loading ${pageContents.length} pages into mindcache...`);
+          
+          // Build page URL mapping for easy reference
+          const urlMapping: Record<string, string> = {};
+          
           pageContents.forEach(page => {
             try {
+              // Save page content
               mindcacheRef.current?.set_value(
                 `page:${page.slug}`,
                 page.content,
@@ -79,11 +91,45 @@ When answering questions:
               );
               mindcacheRef.current?.addTag(`page:${page.slug}`, 'page');
               mindcacheRef.current?.addTag(`page:${page.slug}`, 'content');
+              
+              // Build URL mapping
+              urlMapping[page.title.toLowerCase()] = `/${page.slug}`;
+              
+              // Also save URL directly for this page
+              mindcacheRef.current?.set_value(
+                `url:${page.slug}`,
+                `/${page.slug}`,
+                {
+                  readonly: true,
+                  visible: false, // Don't include in system prompt to reduce noise
+                  hardcoded: false,
+                  template: false,
+                  type: 'text',
+                  contentType: 'text/plain'
+                }
+              );
+              mindcacheRef.current?.addTag(`url:${page.slug}`, 'url');
             } catch (err) {
               console.warn(`Failed to load page: ${page.slug}`, err);
             }
           });
-          console.log('✅ Page content loaded into mindcache');
+          
+          // Save complete URL mapping for quick lookup
+          mindcacheRef.current?.set_value(
+            'page_urls',
+            JSON.stringify(urlMapping, null, 2),
+            {
+              readonly: true,
+              visible: true,
+              hardcoded: false,
+              template: false,
+              type: 'json',
+              contentType: 'application/json'
+            }
+          );
+          mindcacheRef.current?.addTag('page_urls', 'mapping');
+          
+          console.log('✅ Page content and URLs loaded into mindcache');
         })
         .catch(err => {
           console.warn('⚠️ Could not load page content (this is normal in dev mode before first build):', err);
@@ -129,7 +175,8 @@ When answering questions:
         Object.keys(allData).forEach(key => {
           // Skip page content (it comes from build-time JSON, not user input)
           // Skip system prompt (it's set on initialization)
-          if (key.startsWith('page:') || key === 'System_prompt') return;
+          // Skip URLs (they're derived from page content)
+          if (key.startsWith('page:') || key.startsWith('url:') || key === 'System_prompt' || key === 'page_urls') return;
           
           stateToSave[key] = {
             value: mindcacheRef.current?.get_value(key),
