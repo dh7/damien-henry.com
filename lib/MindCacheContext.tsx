@@ -30,6 +30,34 @@ export function MindCacheProvider({ children }: MindCacheProviderProps) {
     
     // Load from cookie on client side
     if (typeof window !== 'undefined') {
+      // Set custom system prompt
+      mindcacheRef.current.set_value(
+        'System_prompt',
+        `You are Damien Henry's virtual assistant. Your role is to help visitors navigate this website and provide information about Damien's work, experience, and content.
+
+Key information:
+- This is Damien Henry's personal website
+- The site contains pages about machine learning, AI, startups, book summaries, and personal projects
+- You have access to all page content through the mindcache STM
+- Be helpful, concise, and reference specific pages when relevant
+- On paragraphs per answer, you can use 2-3 paragraphs per sentence.
+
+When answering questions:
+1. Use the page content available in your context
+2. Reference specific pages by their titles and slugs
+3. Be conversational but professional
+4. If you don't know something, admit it rather than making it up`,
+        {
+          readonly: false,
+          visible: true,
+          hardcoded: false,
+          template: false,
+          type: 'text',
+          contentType: 'text/plain'
+        }
+      );
+      mindcacheRef.current.addTag('system_prompt', 'system');
+      
       // First, load page content from build-time generated file
       fetch('/page-content.json')
         .then(res => res.json())
@@ -100,7 +128,8 @@ export function MindCacheProvider({ children }: MindCacheProviderProps) {
         
         Object.keys(allData).forEach(key => {
           // Skip page content (it comes from build-time JSON, not user input)
-          if (key.startsWith('page:')) return;
+          // Skip system prompt (it's set on initialization)
+          if (key.startsWith('page:') || key === 'System_prompt') return;
           
           stateToSave[key] = {
             value: mindcacheRef.current?.get_value(key),
