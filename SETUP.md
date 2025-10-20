@@ -41,6 +41,8 @@ npm run dev
 
 Visit: http://localhost:3000
 
+**Note:** In development mode, pages load on-demand. The MindCache STM will be empty until you run a production build.
+
 ## 5. Refresh Content from Notion
 
 After editing your Notion page, use any of these methods:
@@ -65,7 +67,18 @@ After editing your Notion page, use any of these methods:
 curl "http://localhost:3000/api/revalidate?secret=abc123xyz"
 ```
 
-## 6. Deploy to Vercel
+## 6. MindCache STM with Page Content
+
+This project includes a MindCache STM that loads all page content on initialization:
+
+- **During Build**: All Notion page content is extracted and saved to `public/page-content.json`
+- **On Load**: The MindCache STM is initialized with all pages as `page:/{slug}` keys
+- **Usage**: Press **Cmd+Shift+D** to open the debug popup and inspect the STM
+- **Manual Generation**: Run `npm run generate-content` to regenerate page content
+
+The page content is automatically available to the AI chat interface through the MindCache system prompt.
+
+## 7. Deploy to Vercel
 
 1. Push to GitHub
 2. Import on [Vercel](https://vercel.com)
@@ -73,6 +86,7 @@ curl "http://localhost:3000/api/revalidate?secret=abc123xyz"
    - `NEXT_PUBLIC_NOTION_PAGE_ID`
    - `REVALIDATE_SECRET` (server-only, not exposed to client)
    - `NEXT_PUBLIC_SITE_URL` (your production URL)
+   - `OPENAI_API_KEY` (for AI chat functionality)
 4. Deploy!
 
 ## FAQ

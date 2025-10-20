@@ -30,6 +30,38 @@ export function MindCacheProvider({ children }: MindCacheProviderProps) {
     
     // Load from cookie on client side
     if (typeof window !== 'undefined') {
+      // First, load page content from build-time generated file
+      fetch('/page-content.json')
+        .then(res => res.json())
+        .then((pageContents: Array<{ pageId: string; slug: string; title: string; content: string }>) => {
+          console.log(`📚 Loading ${pageContents.length} pages into mindcache...`);
+          pageContents.forEach(page => {
+            try {
+              mindcacheRef.current?.set_value(
+                `page:${page.slug}`,
+                page.content,
+                {
+                  readonly: true,
+                  visible: true,
+                  hardcoded: false,
+                  template: false,
+                  type: 'text',
+                  contentType: 'text/plain'
+                }
+              );
+              mindcacheRef.current?.addTag(`page:${page.slug}`, 'page');
+              mindcacheRef.current?.addTag(`page:${page.slug}`, 'content');
+            } catch (err) {
+              console.warn(`Failed to load page: ${page.slug}`, err);
+            }
+          });
+          console.log('✅ Page content loaded into mindcache');
+        })
+        .catch(err => {
+          console.warn('⚠️ Could not load page content (this is normal in dev mode before first build):', err);
+        });
+      
+      // Then, restore user's custom state from cookie
       const savedState = getCookie('mindcache_state');
       if (savedState) {
         try {
@@ -67,6 +99,9 @@ export function MindCacheProvider({ children }: MindCacheProviderProps) {
         const stateToSave: Record<string, any> = {};
         
         Object.keys(allData).forEach(key => {
+          // Skip page content (it comes from build-time JSON, not user input)
+          if (key.startsWith('page:')) return;
+          
           stateToSave[key] = {
             value: mindcacheRef.current?.get_value(key),
             attributes: mindcacheRef.current?.get_attributes(key),
