@@ -13,42 +13,80 @@ interface ChatConversationProps {
   messages: Message[];
 }
 
-// Parse markdown links and convert to React elements
-function parseMarkdownLinks(text: string): (string | JSX.Element)[] {
+// Parse markdown formatting and convert to React elements
+function parseMarkdown(text: string): (string | JSX.Element)[] {
   const parts: (string | JSX.Element)[] = [];
-  // Regex to match markdown links: [text](url)
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  let lastIndex = 0;
+  let currentIndex = 0;
+  let keyCounter = 0;
+
+  // Combined regex for all markdown patterns
+  // Order matters: links first, then bold, italic, code
+  // Note: *italic* is NOT supported to avoid conflicts with regular asterisks
+  const markdownRegex = /(\[([^\]]+)\]\(([^)]+)\))|(\*\*([^*]+)\*\*)|(__([^_]+)__)|(_([^_]+)_)|(`([^`]+)`)/g;
   let match;
-  
-  while ((match = linkRegex.exec(text)) !== null) {
-    // Add text before the link
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+
+  while ((match = markdownRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > currentIndex) {
+      parts.push(text.slice(currentIndex, match.index));
     }
-    
-    // Add the link as a Next.js Link component
-    const linkText = match[1];
-    const url = match[2];
-    parts.push(
-      <Link 
-        key={match.index} 
-        href={url}
-        className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
-        style={{ textDecoration: 'underline' }}
-      >
-        {linkText}
-      </Link>
-    );
-    
-    lastIndex = match.index + match[0].length;
+
+    // Determine which pattern matched and render accordingly
+    if (match[1]) {
+      // Link: [text](url)
+      const linkText = match[2];
+      const url = match[3];
+      parts.push(
+        <Link 
+          key={`link-${keyCounter++}`}
+          href={url}
+          className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline underline-offset-2"
+          style={{ textDecoration: 'underline' }}
+        >
+          {linkText}
+        </Link>
+      );
+    } else if (match[4]) {
+      // Bold: **text**
+      parts.push(
+        <strong key={`bold-${keyCounter++}`} className="font-bold">
+          {match[5]}
+        </strong>
+      );
+    } else if (match[6]) {
+      // Bold: __text__
+      parts.push(
+        <strong key={`bold-${keyCounter++}`} className="font-bold">
+          {match[7]}
+        </strong>
+      );
+    } else if (match[8]) {
+      // Italic: _text_ (single asterisks NOT supported to avoid conflicts)
+      parts.push(
+        <em key={`italic-${keyCounter++}`} className="italic">
+          {match[9]}
+        </em>
+      );
+    } else if (match[10]) {
+      // Code: `text`
+      parts.push(
+        <code 
+          key={`code-${keyCounter++}`}
+          className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono"
+        >
+          {match[11]}
+        </code>
+      );
+    }
+
+    currentIndex = match.index + match[0].length;
   }
-  
+
   // Add remaining text
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+  if (currentIndex < text.length) {
+    parts.push(text.slice(currentIndex));
   }
-  
+
   return parts.length > 0 ? parts : [text];
 }
 
@@ -77,7 +115,7 @@ export default function ChatConversation({ messages }: ChatConversationProps) {
               ? 'text-gray-700 dark:text-white font-bold' 
               : 'text-gray-600 dark:text-gray-300'
           }`}>
-            {parseMarkdownLinks(message.content)}
+            {parseMarkdown(message.content)}
           </div>
         </div>
       ))}

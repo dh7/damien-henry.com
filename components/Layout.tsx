@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import Breadcrumb from './Breadcrumb';
 import ChatInterface from './ChatInterface';
 import STMEditor from './STMEditor';
@@ -11,6 +11,9 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [showDebug, setShowDebug] = useState(false);
+  const [chatWidth, setChatWidth] = useState(33.33); // Start at 1/3 (33.33%)
+  const [isResizing, setIsResizing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -29,6 +32,47 @@ export default function Layout({ children }: LayoutProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showDebug]);
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing || !containerRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const mouseX = e.clientX - containerRect.left;
+      
+      // Calculate chat width as percentage (inverted since chat is on right)
+      const newChatWidth = ((containerWidth - mouseX) / containerWidth) * 100;
+      
+      // Constrain between 20% and 60%
+      const constrainedWidth = Math.min(Math.max(newChatWidth, 20), 60);
+      setChatWidth(constrainedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    if (isResizing) {
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
+  const handleMouseDown = () => {
+    setIsResizing(true);
+  };
+
+  const contentWidth = 100 - chatWidth;
+
   return (
     <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Breadcrumb at the top */}
@@ -37,14 +81,45 @@ export default function Layout({ children }: LayoutProps) {
       </div>
       
       {/* Main content area with content and chat side by side */}
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' }} className="main-content-bg">
+      <div 
+        ref={containerRef}
+        style={{ display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden', position: 'relative' }} 
+        className="main-content-bg"
+      >
         {/* Main content on the left - flexible width with independent scroll */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ width: `${contentWidth}%`, overflowY: 'auto', flexShrink: 0 }}>
           {children}
         </div>
         
-        {/* Chat Interface on the right - fixed width with independent scroll */}
-        <div style={{ width: '384px', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px' }}>
+        {/* Resizable divider */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="resize-divider"
+          style={{
+            width: '8px',
+            flexShrink: 0,
+            cursor: 'col-resize',
+            position: 'relative',
+            zIndex: 10,
+          }}
+        >
+          <div 
+            className="resize-handle"
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: 0,
+              bottom: 0,
+              width: '2px',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'transparent',
+              transition: 'background-color 0.2s ease',
+            }}
+          />
+        </div>
+        
+        {/* Chat Interface on the right - resizable width */}
+        <div style={{ width: `${chatWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px', flexShrink: 0 }}>
           <ChatInterface />
         </div>
       </div>
@@ -82,4 +157,3 @@ export default function Layout({ children }: LayoutProps) {
     </div>
   );
 }
-
