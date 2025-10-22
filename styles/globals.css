@@ -280,15 +280,6 @@ span.notion-link-mention-provider {
   display: block;
 }
 
-/* Chat container responsive display */
-.chat-container-desktop {
-  display: flex !important;
-}
-
-.chat-container-mobile {
-  display: none !important;
-}
-
 @media (max-width: 768px) {
   .mobile-only {
     display: block;
@@ -296,14 +287,6 @@ span.notion-link-mention-provider {
   
   .desktop-only {
     display: none !important;
-  }
-
-  .chat-container-desktop {
-    display: none !important;
-  }
-
-  .chat-container-mobile {
-    display: flex !important;
   }
 }
 
@@ -637,21 +620,6 @@ lite-youtube:hover > .lty-playbtn {
 
 .dark .chat-bubble.expanded .chat-bubble-input-wrapper {
   border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Search icon (only in collapsed state) */
-.chat-bubble-search-icon {
-  position: absolute;
-  left: 20px;
-  display: flex;
-  align-items: center;
-  color: #9aa0a6;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.dark .chat-bubble-search-icon {
-  color: #9aa0a6;
 }
 
 /* Input area */
