@@ -483,6 +483,12 @@ lite-youtube:hover > .lty-playbtn {
   background-color: #191919 !important;
 }
 
+/* Add padding at the bottom of Notion pages for better scrolling */
+.notion-page,
+.notion-full-page {
+  padding-bottom: 10vh !important;
+}
+
 /* Resizable divider hover effect */
 .resize-divider:hover .resize-handle,
 .resize-divider:active .resize-handle {
