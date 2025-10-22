@@ -280,6 +280,15 @@ span.notion-link-mention-provider {
   display: block;
 }
 
+/* Chat container responsive display */
+.chat-container-desktop {
+  display: flex !important;
+}
+
+.chat-container-mobile {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .mobile-only {
     display: block;
@@ -287,6 +296,14 @@ span.notion-link-mention-provider {
   
   .desktop-only {
     display: none !important;
+  }
+
+  .chat-container-desktop {
+    display: none !important;
+  }
+
+  .chat-container-mobile {
+    display: flex !important;
   }
 }
 

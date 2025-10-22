@@ -12,7 +12,11 @@ interface Message {
   content: string;
 }
 
-export default function ChatBubble() {
+interface ChatBubbleProps {
+  chatWidth?: number; // Desktop chat panel width percentage
+}
+
+export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
   const mindcacheRef = useMindCache();
   const router = useRouter();
   
@@ -111,42 +115,67 @@ export default function ChatBubble() {
   };
 
   return (
-    <div className={`chat-bubble ${isExpanded ? 'expanded' : 'collapsed'}`}>
-      {isExpanded && (
-        <>
-          <button 
-            onClick={toggleExpanded}
-            className="chat-bubble-close"
-            aria-label="Close chat"
-          >
-            ×
-          </button>
-          
-          <div className="chat-bubble-conversation">
-            <ChatConversation messages={messages} />
-          </div>
-        </>
-      )}
-      
-      <div className="chat-bubble-input-wrapper">
-        {!isExpanded && (
-          <div className="chat-bubble-search-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-        )}
-        <div className="chat-bubble-input">
+    <>
+      {/* Desktop: Side panel */}
+      <div 
+        className="chat-container-desktop" 
+        style={{ 
+          width: `${chatWidth}%`, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflow: 'hidden', 
+          padding: '16px', 
+          flexShrink: 0 
+        }}
+      >
+        <div className="flex-1 flex flex-col h-full rounded-xl chat-interface-bg">
+          <ChatConversation messages={messages} />
           <ChatInput 
             onSendMessage={handleSendMessage}
             status={isLoading ? 'loading' : 'ready'}
-            variant={isExpanded ? 'terminal' : 'search'}
-            value={inputValue}
-            onChange={handleInputChange}
+            variant="terminal"
           />
         </div>
       </div>
-    </div>
+
+      {/* Mobile: Floating bubble */}
+      <div className={`chat-container-mobile chat-bubble ${isExpanded ? 'expanded' : 'collapsed'}`}>
+        {isExpanded && (
+          <>
+            <button 
+              onClick={toggleExpanded}
+              className="chat-bubble-close"
+              aria-label="Close chat"
+            >
+              ×
+            </button>
+            
+            <div className="chat-bubble-conversation">
+              <ChatConversation messages={messages} />
+            </div>
+          </>
+        )}
+        
+        <div className="chat-bubble-input-wrapper">
+          {!isExpanded && (
+            <div className="chat-bubble-search-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
+          <div className="chat-bubble-input">
+            <ChatInput 
+              onSendMessage={handleSendMessage}
+              status={isLoading ? 'loading' : 'ready'}
+              variant={isExpanded ? 'terminal' : 'search'}
+              value={inputValue}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

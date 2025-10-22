@@ -2,7 +2,6 @@
 
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import Breadcrumb from './Breadcrumb';
-import ChatInterface from './ChatInterface';
 import ChatBubble from './ChatBubble';
 import STMEditor from './STMEditor';
 
@@ -119,15 +118,8 @@ export default function Layout({ children }: LayoutProps) {
           />
         </div>
         
-        {/* Chat Interface on the right - resizable width (desktop only) */}
-        <div className="desktop-only" style={{ width: `${chatWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px', flexShrink: 0 }}>
-          <ChatInterface />
-        </div>
-
-        {/* Floating chat bubble (mobile only) */}
-        <div className="mobile-only">
-          <ChatBubble />
-        </div>
+        {/* Unified Chat - desktop side panel OR mobile bubble */}
+        <ChatBubble chatWidth={chatWidth} />
       </div>
 
       {/* Debug Popup for MindCache STM */}
