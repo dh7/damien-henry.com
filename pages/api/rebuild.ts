@@ -4,14 +4,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Only allow POST requests
-  if (req.method !== 'POST') {
+  // Allow both POST and GET for convenience
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   // Verify secret token to prevent unauthorized rebuilds
-  const token = req.headers['x-rebuild-token'] || req.query.token
-  const expectedToken = process.env.REBUILD_SECRET_TOKEN
+  // Support both dedicated rebuild secret and revalidate secret for convenience
+  const token = req.headers['x-rebuild-token'] || req.query.token || req.query.secret
+  const expectedToken = process.env.REBUILD_SECRET_TOKEN || process.env.REVALIDATE_SECRET
 
   if (!expectedToken || token !== expectedToken) {
     return res.status(401).json({ error: 'Invalid or missing token' })

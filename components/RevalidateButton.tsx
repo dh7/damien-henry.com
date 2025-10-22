@@ -10,6 +10,8 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
   const [result, setResult] = useState<string>('')
   const [visible, setVisible] = useState(false)
   const [secret, setSecret] = useState('')
+  const [revalidateAll, setRevalidateAll] = useState(false)
+  const [regenerateContent, setRegenerateContent] = useState(false)
   const router = useRouter()
 
   // Check for ?refresh=1 in URL
@@ -31,15 +33,40 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
     setResult('')
 
     try {
-      const url = pageId 
-        ? `/api/revalidate?secret=${encodeURIComponent(secret)}&pageId=${pageId}`
-        : `/api/revalidate?secret=${encodeURIComponent(secret)}`
+      // If regenerate content is checked, use rebuild API
+      if (regenerateContent) {
+        const response = await fetch(`/api/rebuild?secret=${encodeURIComponent(secret)}`)
+        const data = await response.json()
+
+        if (response.ok) {
+          setResult('✅ Full rebuild triggered! This will take a few minutes.')
+        } else {
+          setResult(`❌ Error: ${data.message}`)
+        }
+        setLoading(false)
+        return
+      }
+
+      // Build URL with parameters
+      const params = new URLSearchParams()
+      params.set('secret', secret)
       
+      if (revalidateAll) {
+        params.set('all', 'true')
+      } else if (pageId) {
+        params.set('pageId', pageId)
+      }
+      
+      const url = `/api/revalidate?${params.toString()}`
       const response = await fetch(url)
       const data = await response.json()
 
       if (response.ok) {
-        setResult('✅ Page refreshed!')
+        if (revalidateAll) {
+          setResult(`✅ ${data.revalidatedCount || 'All'} pages refreshed!`)
+        } else {
+          setResult('✅ Page refreshed!')
+        }
         setTimeout(() => window.location.reload(), 1000)
       } else {
         setResult(`❌ Error: ${data.message}`)
@@ -100,11 +127,61 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
               boxSizing: 'border-box'
             }}
           />
+          
+          {/* Options */}
+          <div style={{ marginBottom: 10 }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontSize: 13,
+              marginBottom: 6,
+              cursor: 'pointer',
+              color: regenerateContent ? '#666' : '#fff'
+            }}>
+              <input
+                type="checkbox"
+                checked={revalidateAll}
+                onChange={(e) => setRevalidateAll(e.target.checked)}
+                disabled={regenerateContent}
+                style={{ marginRight: 8, cursor: 'pointer' }}
+              />
+              Revalidate all pages
+            </label>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontSize: 13,
+              cursor: 'pointer',
+              color: regenerateContent ? '#ffa500' : '#fff'
+            }}>
+              <input
+                type="checkbox"
+                checked={regenerateContent}
+                onChange={(e) => {
+                  setRegenerateContent(e.target.checked)
+                  if (e.target.checked) setRevalidateAll(false)
+                }}
+                style={{ marginRight: 8, cursor: 'pointer' }}
+              />
+              Regenerate content (full rebuild)
+            </label>
+            {regenerateContent && (
+              <div style={{ 
+                fontSize: 11, 
+                color: '#ffa500', 
+                marginTop: 4,
+                marginLeft: 24 
+              }}>
+                ⚠️ Triggers full deployment (~2-3 min)
+              </div>
+            )}
+          </div>
+          
           <button
             onClick={handleRevalidate}
             disabled={loading}
             style={{
-              background: loading ? '#666' : '#0070f3',
+              background: loading ? '#666' : (regenerateContent ? '#ff6b00' : '#0070f3'),
               color: 'white',
               border: 'none',
               padding: '8px 16px',
@@ -114,7 +191,14 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
               width: '100%'
             }}
           >
-            {loading ? '⏳ Refreshing...' : '🔄 Refresh Page'}
+            {loading 
+              ? '⏳ Processing...' 
+              : regenerateContent 
+                ? '🔄 Rebuild & Regenerate' 
+                : revalidateAll 
+                  ? '🔄 Refresh All Pages'
+                  : '🔄 Refresh Page'
+            }
           </button>
           {result && (
             <div style={{ marginTop: 8, fontSize: 12 }}>
@@ -126,6 +210,8 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
               setVisible(false)
               setSecret('')
               setResult('')
+              setRevalidateAll(false)
+              setRegenerateContent(false)
             }}
             style={{
               background: 'transparent',
