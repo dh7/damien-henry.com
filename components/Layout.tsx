@@ -3,6 +3,7 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import Breadcrumb from './Breadcrumb';
 import ChatInterface from './ChatInterface';
+import ChatBubble from './ChatBubble';
 import STMEditor from './STMEditor';
 
 interface LayoutProps {
@@ -87,14 +88,14 @@ export default function Layout({ children }: LayoutProps) {
         className="main-content-bg"
       >
         {/* Main content on the left - flexible width with independent scroll */}
-        <div style={{ width: `${contentWidth}%`, overflowY: 'auto', flexShrink: 0 }}>
+        <div className="content-area" style={{ width: `${contentWidth}%`, overflowY: 'auto', flexShrink: 0 }}>
           {children}
         </div>
         
         {/* Resizable divider */}
         <div
           onMouseDown={handleMouseDown}
-          className="resize-divider"
+          className="resize-divider desktop-only"
           style={{
             width: '8px',
             flexShrink: 0,
@@ -118,9 +119,14 @@ export default function Layout({ children }: LayoutProps) {
           />
         </div>
         
-        {/* Chat Interface on the right - resizable width */}
-        <div style={{ width: `${chatWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px', flexShrink: 0 }}>
+        {/* Chat Interface on the right - resizable width (desktop only) */}
+        <div className="desktop-only" style={{ width: `${chatWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '16px', flexShrink: 0 }}>
           <ChatInterface />
+        </div>
+
+        {/* Floating chat bubble (mobile only) */}
+        <div className="mobile-only">
+          <ChatBubble />
         </div>
       </div>
 

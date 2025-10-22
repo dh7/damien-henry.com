@@ -271,8 +271,32 @@ span.notion-link-mention-provider {
 }
 
 
+/* Responsive utilities */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+}
+
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+  /* Make content full width on mobile */
+  .content-area {
+    width: 100% !important;
+  }
+
   /* Reset notion's full page padding for mobile */
   .notion-full-page {
     padding: 0 !important;
@@ -468,6 +492,187 @@ lite-youtube:hover > .lty-playbtn {
 .dark .resize-divider:hover .resize-handle,
 .dark .resize-divider:active .resize-handle {
   background-color: rgba(96, 165, 250, 0.5) !important;
+}
+
+/* Chat Bubble (Mobile) */
+.chat-bubble {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  overflow: hidden;
+}
+
+.dark .chat-bubble {
+  background-color: #2a2a2a;
+}
+
+/* Collapsed state - Google search bar style */
+.chat-bubble.collapsed {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 600px;
+  height: 52px;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background-color: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.dark .chat-bubble.collapsed {
+  background-color: #303134;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-bubble.collapsed:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dark .chat-bubble.collapsed:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Expanded state - larger bubble covering most of screen */
+.chat-bubble.expanded {
+  bottom: 20px;
+  right: 20px;
+  left: 20px;
+  top: 100px;
+  height: calc(100vh - 120px);
+  padding: 0;
+  transform: none;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.dark .chat-bubble.expanded {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Minimalistic close button (X) */
+.chat-bubble-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+  z-index: 10;
+  font-weight: 300;
+}
+
+.chat-bubble-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.dark .chat-bubble-close {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .chat-bubble-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Conversation area in expanded bubble */
+.chat-bubble-conversation {
+  flex: 1;
+  overflow-y: auto;
+  padding: 48px 0 0 0;
+  min-height: 0;
+}
+
+/* Input wrapper with search icon */
+.chat-bubble-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chat-bubble.collapsed .chat-bubble-input-wrapper {
+  padding: 0;
+}
+
+.chat-bubble.expanded .chat-bubble-input-wrapper {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .chat-bubble.expanded .chat-bubble-input-wrapper {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Search icon (only in collapsed state) */
+.chat-bubble-search-icon {
+  position: absolute;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  color: #9aa0a6;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark .chat-bubble-search-icon {
+  color: #9aa0a6;
+}
+
+/* Input area */
+.chat-bubble-input {
+  flex: 1;
+  background-color: transparent;
+}
+
+.chat-bubble.collapsed .chat-bubble-input {
+  padding: 0;
+}
+
+.chat-bubble.expanded .chat-bubble-input {
+  border-radius: 0 0 24px 24px;
+  background-color: white;
+  padding: 0 12px;
+}
+
+.dark .chat-bubble.expanded .chat-bubble-input {
+  background-color: #2a2a2a;
+}
+
+/* Adjust chat conversation scrolling */
+.chat-bubble .chat-bubble-conversation::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-bubble .chat-bubble-conversation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-bubble .chat-bubble-conversation::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark .chat-bubble .chat-bubble-conversation::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 
