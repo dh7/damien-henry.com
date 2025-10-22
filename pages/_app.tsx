@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import Layout from '@/components/Layout'
 import { MindCacheProvider } from '@/lib/MindCacheContext'
+import { trackPageView } from '@/lib/sessionTracking'
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
 import 'katex/dist/katex.min.css'
@@ -21,9 +22,16 @@ export default function App({ Component, pageProps }: AppProps) {
       })
     }
 
-    // Scroll to top on route change
-    const handleRouteChange = () => {
+    // Track initial page view
+    trackPageView(router.asPath, document.title)
+
+    // Scroll to top and track page view on route change
+    const handleRouteChange = (url: string) => {
       window.scrollTo({ top: 0, behavior: 'instant' })
+      // Wait a bit for title to update
+      setTimeout(() => {
+        trackPageView(url, document.title)
+      }, 100)
     }
 
     router.events.on('routeChangeComplete', handleRouteChange)

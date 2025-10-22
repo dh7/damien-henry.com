@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useMindCache } from '@/lib/MindCacheContext';
+import { getSessionId } from '@/lib/sessionTracking';
 import ChatConversation from './ChatConversation';
 import ChatInput from './ChatInput';
 
@@ -45,7 +46,8 @@ export default function ChatInterface() {
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          systemPrompt: mindcacheRef.get_system_prompt()
+          systemPrompt: mindcacheRef.get_system_prompt(),
+          sessionId: getSessionId()
         }),
       });
 
