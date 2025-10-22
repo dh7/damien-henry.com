@@ -20,7 +20,7 @@ export default function ChatInterface() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hello, I'm Damien Henry virtual assistant. I'm here to help you navigate this website, give you more information about what is there. Feel free to ask any question anytime. I'm here to help"
+      content: "Hello, I'm Damien Henry virtual assistant. I'm here to help you navigate this website. Feel free to ask any question anytime. I'm here to help"
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
