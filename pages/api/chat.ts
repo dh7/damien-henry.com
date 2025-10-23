@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { createClient } from 'redis';
 
 let redisClient: any = null;
@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const result = await generateText({
-      model: openai('gpt-5-nano'),
+      model: google('gemini-flash-latest'),
       messages,
       system: systemPrompt || 'You are a helpful assistant.',
     });
