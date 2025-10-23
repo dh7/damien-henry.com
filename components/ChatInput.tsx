@@ -58,7 +58,11 @@ export default function ChatInput({ onSendMessage, status, value: controlledValu
         <button 
           type="submit"
           disabled={status !== 'ready' || !input.trim()}
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          className="flex-shrink-0 px-2 py-1 rounded disabled:opacity-30 disabled:cursor-not-allowed text-black dark:text-white"
+          style={{
+            fontWeight: '700',
+            fontSize: '16px'
+          }}
         >
           {isLoading ? '...' : '↵'}
         </button>
