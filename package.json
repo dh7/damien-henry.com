@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/generate-page-content.ts",
+    "prebuild": "NODE_ENV=production tsx scripts/generate-page-content.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-content": "tsx scripts/generate-page-content.ts"
+    "generate-content": "tsx scripts/generate-page-content.ts",
+    "generate-content-dev": "NODE_ENV=development tsx scripts/generate-page-content.ts",
+    "generate-content-prod": "NODE_ENV=production tsx scripts/generate-page-content.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.52",

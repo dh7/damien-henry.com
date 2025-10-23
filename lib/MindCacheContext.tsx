@@ -78,8 +78,12 @@ Example flows:
       );
       mindcacheRef.current.addTag('system_prompt', 'system');
       
+      // Determine which page content file to load based on environment
+      const isDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL
+      const pageContentFile = isDev ? '/page-content-dev.json' : '/page-content-prod.json'
+      
       // First, load page content from build-time generated file
-      fetch('/page-content.json')
+      fetch(pageContentFile)
         .then(res => res.json())
         .then((pageContents: Array<{ pageId: string; slug: string; title: string; content: string }>) => {
           console.log(`📚 Loading ${pageContents.length} pages into mindcache...`);
