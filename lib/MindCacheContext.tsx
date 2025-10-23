@@ -79,7 +79,8 @@ Example flows:
       mindcacheRef.current.addTag('system_prompt', 'system');
       
       // Determine which page content file to load based on environment
-      const isDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL
+      // In production (Vercel), we want friendly slugs, in dev we want page IDs
+      const isDev = process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && window.location.hostname === 'localhost'
       const pageContentFile = isDev ? '/page-content-dev.json' : '/page-content-prod.json'
       
       // First, load page content from build-time generated file
