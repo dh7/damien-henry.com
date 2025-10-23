@@ -30,18 +30,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (redis) {
           const lastMessage = messages[messages.length - 1];
           if (lastMessage?.role === 'user') {
-            const event = {
-              sessionId: sessionId || 'unknown',
-              eventType: 'chat_message',
-              content: lastMessage.content,
-              timestamp: new Date().toISOString(),
-              ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-              userAgent: req.headers['user-agent']
-            };
-            
-            await redis.lPush('events:all', JSON.stringify(event));
-            
+            // Only track if we have a valid sessionId
             if (sessionId) {
+              const event = {
+                sessionId,
+                eventType: 'chat_message',
+                content: lastMessage.content,
+                timestamp: new Date().toISOString(),
+                ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                userAgent: req.headers['user-agent']
+              };
+              
+              await redis.lPush('events:all', JSON.stringify(event));
               await redis.lPush(`events:session:${sessionId}`, JSON.stringify(event));
               await redis.expire(`events:session:${sessionId}`, 60 * 60 * 24 * 30);
             }
@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const result = await generateText({
-      model: openai('gpt-4o-mini'),
+      model: openai('gpt-5-nano'),
       messages,
       system: systemPrompt || 'You are a helpful assistant.',
     });

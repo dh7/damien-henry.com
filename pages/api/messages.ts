@@ -30,14 +30,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const rawEvents = await redis.lRange('events:all', 0, 999);
     const events = rawEvents.map((e: string) => JSON.parse(e));
     
-    // Group by session
+    // Filter out events without sessionId and group by session
     const sessionMap = new Map();
     events.forEach((event: any) => {
-      const sessionId = event.sessionId || 'unknown';
-      if (!sessionMap.has(sessionId)) {
-        sessionMap.set(sessionId, []);
+      if (event.sessionId) {
+        if (!sessionMap.has(event.sessionId)) {
+          sessionMap.set(event.sessionId, []);
+        }
+        sessionMap.get(event.sessionId).push(event);
       }
-      sessionMap.get(sessionId).push(event);
     });
 
     // Convert to array and sort by most recent activity
