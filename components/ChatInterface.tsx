@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useMindCache } from '@/lib/MindCacheContext';
 import { getSessionId } from '@/lib/sessionTracking';
@@ -25,6 +25,11 @@ export default function ChatInterface() {
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Log build version on mount
+  useEffect(() => {
+    console.log('🏗️ ChatInterface Build:', process.env.NEXT_PUBLIC_BUILD_TIME);
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     const processedContent = mindcacheRef.injectSTM(content);
