@@ -100,7 +100,7 @@ export default function Usage() {
     setExpandedSessions(newExpanded);
   };
 
-  const toggleSelectSession = (sessionId: string, e: React.MouseEvent) => {
+  const toggleSelectSession = (sessionId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     const newSelected = new Set(selectedSessions);
     if (newSelected.has(sessionId)) {
