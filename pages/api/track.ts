@@ -16,8 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Only track if logging is enabled
-  if (process.env.ENABLE_CHAT_LOGGING !== 'true') {
+  // Only track if page logging is enabled
+  if (process.env.ENABLE_PAGE_LOGGING !== 'true') {
     return res.status(200).json({ success: true, logged: false });
   }
 
