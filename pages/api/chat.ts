@@ -22,13 +22,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { messages, systemPrompt, sessionId } = req.body;
 
     console.log('🤖 Chat API called with', messages?.length || 0, 'messages');
+    console.log('📊 Chat logging enabled:', process.env.ENABLE_CHAT_LOGGING);
+    console.log('🔑 SessionId:', sessionId);
 
     // Save user message (if enabled)
     if (process.env.ENABLE_CHAT_LOGGING === 'true') {
       try {
         const redis = await getRedisClient();
+        console.log('🔴 Redis client:', redis ? 'connected' : 'null');
         if (redis) {
           const lastMessage = messages[messages.length - 1];
+          console.log('💬 Last message role:', lastMessage?.role);
           if (lastMessage?.role === 'user') {
             // Only track if we have a valid sessionId
             if (sessionId) {
@@ -44,12 +48,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               await redis.lPush('events:all', JSON.stringify(event));
               await redis.lPush(`events:session:${sessionId}`, JSON.stringify(event));
               await redis.expire(`events:session:${sessionId}`, 60 * 60 * 24 * 30);
+              console.log('✅ Chat message logged successfully');
+            } else {
+              console.warn('⚠️ No sessionId provided, skipping chat logging');
             }
           }
         }
       } catch (redisError) {
-        // Silently fail if Redis is not configured (e.g., local dev)
-        console.warn('Failed to log chat message (Redis not configured):', redisError);
+        console.error('❌ Failed to log chat message:', redisError);
       }
     }
 

@@ -26,6 +26,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Redis not configured' });
     }
 
+    // Handle DELETE request
+    if (req.method === 'DELETE') {
+      const { sessionIds } = req.body;
+      
+      if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
+        return res.status(400).json({ error: 'Invalid sessionIds' });
+      }
+
+      // Delete session-specific lists
+      for (const sessionId of sessionIds) {
+        await redis.del(`events:session:${sessionId}`);
+      }
+
+      // Remove events from events:all list
+      const rawEvents = await redis.lRange('events:all', 0, -1);
+      const events = rawEvents.map((e: string) => JSON.parse(e));
+      
+      // Filter out events for deleted sessions
+      const remainingEvents = events.filter((event: any) => 
+        !sessionIds.includes(event.sessionId)
+      );
+
+      // Clear and rebuild events:all
+      await redis.del('events:all');
+      for (const event of remainingEvents.reverse()) {
+        await redis.lPush('events:all', JSON.stringify(event));
+      }
+
+      return res.status(200).json({ success: true, deleted: sessionIds.length });
+    }
+
+    // Handle GET request
     // Get last 1000 events
     const rawEvents = await redis.lRange('events:all', 0, 999);
     const events = rawEvents.map((e: string) => JSON.parse(e));
@@ -60,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       totalEvents: events.length
     });
   } catch (error) {
-    console.error('Error fetching messages:', error);
+    console.error('Error in messages API:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
