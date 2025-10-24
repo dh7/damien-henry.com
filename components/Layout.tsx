@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router';
 import Breadcrumb from './Breadcrumb';
 import ChatBubble from './ChatBubble';
 import STMEditor from './STMEditor';
@@ -10,10 +11,14 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const router = useRouter();
   const [showDebug, setShowDebug] = useState(false);
   const [chatWidth, setChatWidth] = useState(33.33); // Start at 1/3 (33.33%)
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Pages where chat should be hidden
+  const hideChatPages = ['/usage'];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -87,39 +92,41 @@ export default function Layout({ children }: LayoutProps) {
         className="main-content-bg"
       >
         {/* Main content on the left - flexible width with independent scroll */}
-        <div className="content-area" style={{ width: `${contentWidth}%`, overflowY: 'auto', flexShrink: 0 }}>
+        <div className="content-area" style={{ width: hideChatPages.includes(router.pathname) ? '100%' : `${contentWidth}%`, overflowY: 'auto', flexShrink: 0 }}>
           {children}
         </div>
         
-        {/* Resizable divider */}
-        <div
-          onMouseDown={handleMouseDown}
-          className="resize-divider desktop-only"
-          style={{
-            width: '8px',
-            flexShrink: 0,
-            cursor: 'col-resize',
-            position: 'relative',
-            zIndex: 10,
-          }}
-        >
-          <div 
-            className="resize-handle"
+        {/* Resizable divider - only show when chat is visible */}
+        {!hideChatPages.includes(router.pathname) && (
+          <div
+            onMouseDown={handleMouseDown}
+            className="resize-divider desktop-only"
             style={{
-              position: 'absolute',
-              left: '50%',
-              top: 0,
-              bottom: 0,
-              width: '2px',
-              transform: 'translateX(-50%)',
-              backgroundColor: 'transparent',
-              transition: 'background-color 0.2s ease',
+              width: '8px',
+              flexShrink: 0,
+              cursor: 'col-resize',
+              position: 'relative',
+              zIndex: 10,
             }}
-          />
-        </div>
+          >
+            <div 
+              className="resize-handle"
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: 0,
+                bottom: 0,
+                width: '2px',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'transparent',
+                transition: 'background-color 0.2s ease',
+              }}
+            />
+          </div>
+        )}
         
-        {/* Unified Chat - desktop side panel OR mobile bubble */}
-        <ChatBubble chatWidth={chatWidth} />
+        {/* Unified Chat - desktop side panel OR mobile bubble - hide on certain pages */}
+        {!hideChatPages.includes(router.pathname) && <ChatBubble chatWidth={chatWidth} />}
       </div>
 
       {/* Debug Popup for MindCache STM */}
