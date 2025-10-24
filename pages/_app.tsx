@@ -3,7 +3,6 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { ThemeProvider } from 'next-themes'
 import Layout from '@/components/Layout'
-import { MindCacheProvider } from '@/lib/MindCacheContext'
 import { trackPageView } from '@/lib/sessionTracking'
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
@@ -102,11 +101,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="theme">
-      <MindCacheProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </MindCacheProvider>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </ThemeProvider>
   )
 }

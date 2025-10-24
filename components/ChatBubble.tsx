@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useMindCache } from '@/lib/MindCacheContext';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { getSessionId } from '@/lib/sessionTracking';
 import ChatConversation from './ChatConversation';
@@ -23,7 +22,6 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
   const isMobile = useIsMobile();
-  const mindcacheRef = useMindCache();
   const router = useRouter();
   
   const [messages, setMessages] = useState<Message[]>([
@@ -54,12 +52,10 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
     // Clear input after sending
     setInputValue('');
     
-    const processedContent = mindcacheRef.injectSTM(content);
-    
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: processedContent
+      content
     };
     
     setMessages(prev => [...prev, userMessage]);
@@ -76,7 +72,6 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          systemPrompt: mindcacheRef.get_system_prompt(),
           sessionId
         }),
       });

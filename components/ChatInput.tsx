@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useMindCache } from '@/lib/MindCacheContext';
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
@@ -12,7 +11,6 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ onSendMessage, status, value: controlledValue, onChange }: ChatInputProps) {
-  const mindcacheRef = useMindCache();
   const [internalInput, setInternalInput] = useState('');
   
   // Use controlled value if provided, otherwise use internal state

@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { createClient } from 'redis';
+import { getMindCache } from '@/lib/serverMindCache';
 
 let redisClient: any = null;
 
@@ -19,11 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { messages, systemPrompt, sessionId } = req.body;
+    const { messages, sessionId } = req.body;
 
     console.log('🤖 Chat API called with', messages?.length || 0, 'messages');
     console.log('📊 Chat logging enabled:', process.env.ENABLE_CHAT_LOGGING);
     console.log('🔑 SessionId:', sessionId);
+
+    // Get server-side mindcache
+    const mindcache = getMindCache();
 
     // Save user message (if enabled)
     if (process.env.ENABLE_CHAT_LOGGING === 'true') {
@@ -62,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = await generateText({
       model: google('gemini-flash-latest'),
       messages,
-      system: systemPrompt || 'You are a helpful assistant.',
+      system: mindcache.get_system_prompt(),
     });
 
     // Check if the response contains navigation intent

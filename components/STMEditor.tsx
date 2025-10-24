@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useMindCache } from '@/lib/MindCacheContext';
 
 // Type definitions
 interface STMEditorProps {
@@ -9,9 +8,14 @@ interface STMEditorProps {
   selectedTags?: string[]; // Filter keys by these tags (OR logic); undefined/empty = show all
 }
 
+interface STMData {
+  value: any;
+  attributes: any;
+  tags: string[];
+}
+
 export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps) {
-  const mindcacheRef = useMindCache();
-  const [stmState, setSTMState] = useState(mindcacheRef.getAll());
+  const [stmState, setSTMState] = useState<Record<string, STMData>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [editingAttributes, setEditingAttributes] = useState<string | null>(null);
@@ -27,26 +31,66 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
   const [editingKeyName, setEditingKeyName] = useState('');
   const [newTagInput, setNewTagInput] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
 
-  // Subscribe to STM changes to update UI
-  const updateSTMState = useCallback(() => {
-    setSTMState(mindcacheRef.getAll());
-    if (onSTMChange) {
-      onSTMChange();
+  // Fetch mindcache data from server
+  const fetchSTMData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/mindcache');
+      if (response.ok) {
+        const data = await response.json();
+        setSTMState(data);
+        
+        // Extract all unique tags
+        const tags = new Set<string>();
+        (Object.values(data) as STMData[]).forEach((item) => {
+          item.tags?.forEach((tag: string) => tags.add(tag));
+        });
+        setAllTags(Array.from(tags));
+        
+        if (onSTMChange) {
+          onSTMChange();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch STM data:', error);
     }
-  }, [onSTMChange, mindcacheRef]);
+  }, [onSTMChange]);
 
-  // Subscribe to all STM changes on mount
+  // Fetch data on mount and set up polling
   useEffect(() => {
-    mindcacheRef.subscribeToAll(updateSTMState);
-    return () => mindcacheRef.unsubscribeFromAll(updateSTMState);
-  }, [updateSTMState, mindcacheRef]);
+    fetchSTMData();
+    const interval = setInterval(fetchSTMData, 2000); // Poll every 2 seconds
+    return () => clearInterval(interval);
+  }, [fetchSTMData]);
 
   // Handle file upload
   const handleFileUpload = async (key: string, file: File) => {
     try {
-      await mindcacheRef.set_file(key, file);
-      console.log(`✅ File uploaded to ${key}:`, file.name);
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result;
+        await fetch('/api/mindcache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key,
+            value: base64,
+            attributes: {
+              readonly: false,
+              visible: true,
+              hardcoded: false,
+              template: false,
+              type: file.type.startsWith('image/') ? 'image' : 'file',
+              contentType: file.type
+            }
+          })
+        });
+        fetchSTMData();
+        console.log(`✅ File uploaded to ${key}:`, file.name);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('❌ Failed to upload file:', error);
       alert('Failed to upload file. Please try again.');
@@ -55,8 +99,17 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
 
 
   // Delete an STM key
-  const deleteSTMKey = (key: string) => {
-    mindcacheRef.delete(key);
+  const deleteSTMKey = async (key: string) => {
+    try {
+      await fetch('/api/mindcache', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      fetchSTMData();
+    } catch (error) {
+      console.error('Failed to delete key:', error);
+    }
   };
 
   // Start editing a field
@@ -66,7 +119,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
   };
 
   // Save edited value
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingKey) {
       try {
         // Try to parse as JSON first, fall back to string
@@ -76,9 +129,17 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
         } catch {
           parsedValue = editingValue;
         }
-        mindcacheRef.set_value(editingKey, parsedValue);
+        await fetch('/api/mindcache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: editingKey,
+            value: parsedValue
+          })
+        });
         setEditingKey(null);
         setEditingValue('');
+        fetchSTMData();
       } catch (error) {
         console.error('Error saving edit:', error);
       }
@@ -93,16 +154,16 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
 
   // Start editing attributes
   const startEditingAttributes = (key: string) => {
-    const attributes = mindcacheRef.get_attributes(key);
-    if (attributes) {
+    const data = stmState[key];
+    if (data && data.attributes) {
       setAttributesForm({
-        readonly: attributes.readonly,
-        visible: attributes.visible,
-        hardcoded: attributes.hardcoded,
-        template: attributes.template,
-        type: attributes.type,
-        contentType: attributes.contentType || '',
-        tags: mindcacheRef.getTags(key)
+        readonly: data.attributes.readonly,
+        visible: data.attributes.visible,
+        hardcoded: data.attributes.hardcoded,
+        template: data.attributes.template,
+        type: data.attributes.type,
+        contentType: data.attributes.contentType || '',
+        tags: data.tags || []
       });
     } else {
       // Default attributes for new keys
@@ -122,7 +183,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
   };
 
   // Save attributes
-  const saveAttributes = () => {
+  const saveAttributes = async () => {
     if (editingAttributes) {
       // Collect final tags array including any pending tag being typed
       const finalTags = [...attributesForm.tags];
@@ -137,39 +198,49 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
       // If key name changed, we need to create new entry and delete old one
       if (newKey && newKey !== oldKey) {
         // Don't allow renaming to existing key or system keys
-        if (mindcacheRef.has(newKey) || newKey.startsWith('$')) {
+        if (stmState[newKey] || newKey.startsWith('$')) {
           alert(`Key "${newKey}" already exists or is a system key`);
           return;
         }
         
         // Get current value
-        const currentValue = mindcacheRef.get_value(oldKey);
+        const currentValue = stmState[oldKey].value;
         
         // Create new entry with new name (excluding tags from attributes)
         const { tags: _, ...attributesWithoutTags } = attributesForm;
         void _; // Mark as intentionally unused
-        mindcacheRef.set_value(newKey, currentValue, attributesWithoutTags);
-        
-        // Set tags separately (using final tags)
-        finalTags.forEach(tag => {
-          mindcacheRef.addTag(newKey, tag);
+        await fetch('/api/mindcache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: newKey,
+            value: currentValue,
+            attributes: attributesWithoutTags,
+            tags: finalTags
+          })
         });
         
         // Delete old entry
-        mindcacheRef.delete(oldKey);
+        await fetch('/api/mindcache', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: oldKey })
+        });
       } else {
-        // Just update attributes (excluding tags)
+        // Just update attributes and tags
         const { tags: _, ...attributesWithoutTags } = attributesForm;
         void _; // Mark as intentionally unused
-        mindcacheRef.set_attributes(oldKey, attributesWithoutTags);
         
-        // Update tags - remove all existing tags and add new ones (using final tags)
-        const existingTags = mindcacheRef.getTags(oldKey);
-        existingTags.forEach(tag => {
-          mindcacheRef.removeTag(oldKey, tag);
-        });
-        finalTags.forEach(tag => {
-          mindcacheRef.addTag(oldKey, tag);
+        const existingTags = stmState[oldKey].tags || [];
+        await fetch('/api/mindcache', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: oldKey,
+            attributes: attributesWithoutTags,
+            removeTags: existingTags,
+            tags: finalTags
+          })
         });
       }
       
@@ -177,6 +248,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
       setEditingKeyName('');
       setNewTagInput('');
       setTagSuggestions([]);
+      fetchSTMData();
     }
   };
 
@@ -213,7 +285,6 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
     
     // Update suggestions based on input
     if (value.trim()) {
-      const allTags = mindcacheRef.getAllTags();
       const filtered = allTags.filter((tag: string) => 
         tag.toLowerCase().includes(value.toLowerCase()) &&
         !attributesForm.tags.includes(tag)
@@ -259,18 +330,19 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
         ) : (
           <div className="space-y-2">
             {Object.entries(stmState)
-              .filter(([key]) => {
+              .filter(([key, data]) => {
                 // If no tags selected, show all keys
                 if (!selectedTags || selectedTags.length === 0) {
                   return true;
                 }
                 // Show key if it has ANY of the selected tags (OR logic)
-                const keyTags = mindcacheRef.getTags(key);
+                const keyTags = data.tags || [];
                 return selectedTags.some(selectedTag => keyTags.includes(selectedTag));
               })
-              .map(([key, value]) => {
+              .map(([key, data]) => {
+              const value = data.value;
               const isEmpty = !value || (typeof value === 'string' && value.trim() === '');
-              const attributes = mindcacheRef.get_attributes(key);
+              const attributes = data.attributes;
               const isSystemKey = key.startsWith('$');
               const contentType = attributes?.type || 'text';
               
@@ -281,9 +353,8 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
               if (isEmpty) {
                 displayValue = '_______';
               } else if (contentType === 'image') {
-                const dataUrl = mindcacheRef.get_data_url(key);
                 displayValue = `[IMAGE: ${attributes?.contentType || 'unknown'}]`;
-                isPreviewable = !!dataUrl;
+                isPreviewable = typeof value === 'string' && value.startsWith('data:');
               } else if (contentType === 'file') {
                 displayValue = `[FILE: ${attributes?.contentType || 'unknown'}]`;
                 isPreviewable = false;
@@ -299,7 +370,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
               
               // Create property indicators
               const indicators = [];
-              const tags = mindcacheRef.getTags(key);
+              const tags = data.tags || [];
               if (attributes) {
                 // Add type indicator
                 if (contentType !== 'text') {
@@ -411,7 +482,7 @@ export default function STMEditor({ onSTMChange, selectedTags }: STMEditorProps)
                       {contentType === 'image' && isPreviewable && (
                         <div className="mt-2 max-w-xs">
                           <img 
-                            src={mindcacheRef.get_data_url(key)} 
+                            src={value as string} 
                             alt={`Preview of ${key}`}
                             className="max-w-full h-auto border border-gray-600 rounded"
                             style={{ maxHeight: '200px' }}
