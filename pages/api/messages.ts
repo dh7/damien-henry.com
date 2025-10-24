@@ -74,15 +74,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Convert to array and sort by most recent activity
-    const sessions = Array.from(sessionMap.entries()).map(([sessionId, events]) => ({
-      sessionId,
-      events: events.sort((a: any, b: any) => 
+    const sessions = Array.from(sessionMap.entries()).map(([sessionId, events]) => {
+      // Sort events chronologically (oldest first)
+      const sortedEvents = events.sort((a: any, b: any) => 
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      ),
-      firstSeen: events[events.length - 1]?.timestamp,
-      lastSeen: events[0]?.timestamp,
-      eventCount: events.length
-    })).sort((a, b) => 
+      );
+      
+      return {
+        sessionId,
+        events: sortedEvents,
+        firstSeen: sortedEvents[0]?.timestamp,              // Oldest event
+        lastSeen: sortedEvents[sortedEvents.length - 1]?.timestamp, // Newest event
+        eventCount: sortedEvents.length
+      };
+    }).sort((a, b) => 
+      // Sort sessions by most recent activity first
       new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
     );
 
