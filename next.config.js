@@ -14,7 +14,7 @@ const nextConfig = {
     return [
       {
         source: '/strategy-playing-to-win',
-        destination: '/',
+        destination: '/reading/strategy-playing-to-win',
         permanent: false, // 307 temporary redirect
       },
     ]
