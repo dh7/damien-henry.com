@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useMindCache } from '@/lib/MindCacheContext';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { getSessionId } from '@/lib/sessionTracking';
 import ChatConversation from './ChatConversation';
 import ChatInput from './ChatInput';
+
+// Log immediately on module load
+console.log('🏗️ ChatBubble loaded at:', new Date().toISOString());
 
 interface Message {
   id: string;
@@ -33,6 +37,11 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
+  // Log build version on mount
+  useEffect(() => {
+    console.log('🏗️ ChatBubble Build:', process.env.NEXT_PUBLIC_BUILD_TIME);
+  }, []);
+
   const handleInputChange = (value: string) => {
     setInputValue(value);
     // Auto-expand when user starts typing
@@ -57,6 +66,9 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
     setIsLoading(true);
 
     try {
+      const sessionId = getSessionId();
+      console.log('🔑 Frontend sessionId:', sessionId);
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -64,7 +76,8 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
-          systemPrompt: mindcacheRef.get_system_prompt()
+          systemPrompt: mindcacheRef.get_system_prompt(),
+          sessionId
         }),
       });
 
