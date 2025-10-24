@@ -9,6 +9,16 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
   },
+  // Temporary redirects
+  async redirects() {
+    return [
+      {
+        source: '/strategy-playing-to-win',
+        destination: '/',
+        permanent: false, // 307 temporary redirect
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
