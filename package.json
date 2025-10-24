@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "NODE_ENV=production tsx scripts/generate-page-content.ts",
+    "prebuild": "tsx scripts/generate-page-content.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
