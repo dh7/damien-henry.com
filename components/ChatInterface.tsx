@@ -39,6 +39,9 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
+      const sessionId = getSessionId();
+      console.log('🔑 Frontend sessionId:', sessionId);
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -47,7 +50,7 @@ export default function ChatInterface() {
         body: JSON.stringify({
           messages: [...messages, userMessage],
           systemPrompt: mindcacheRef.get_system_prompt(),
-          sessionId: getSessionId()
+          sessionId
         }),
       });
 
