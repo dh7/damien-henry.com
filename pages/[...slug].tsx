@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import RevalidateButton from '@/components/RevalidateButton'
 import { useMemo, useState, useEffect } from 'react'
 import { useTheme } from 'next-themes'
+import { useRouter } from 'next/router'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then((m) => m.Code)
@@ -55,10 +56,18 @@ function replaceAudioUrls(recordMap: any): any {
 export default function NotionPage({ recordMap, pageId, slugMappings = [], pageMetadata }: PageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
   
   useEffect(() => {
     setMounted(true)
   }, [])
+  
+  // Redirect to home page if no recordMap (404)
+  useEffect(() => {
+    if (!recordMap) {
+      router.push('/')
+    }
+  }, [recordMap, router])
   
   const isDark = mounted && resolvedTheme === 'dark'
   
@@ -77,7 +86,7 @@ export default function NotionPage({ recordMap, pageId, slugMappings = [], pageM
   }, [recordMap, pageId, pageMetadata?.title])
   
   if (!recordMap) {
-    return <div>Loading...</div>
+    return <div>Redirecting...</div>
   }
 
   const defaultDescription = "This website contains resources about Damien Henry, Startups and Artificial Intelligence."
