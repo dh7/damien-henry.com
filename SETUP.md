@@ -1,5 +1,7 @@
 # Quick Setup Guide
 
+This guide will get your Notion-powered website running in 5 minutes.
+
 ## 1. Install Dependencies
 ```bash
 npm install
@@ -7,7 +9,7 @@ npm install
 
 ## 2. Configure Notion
 
-1. Create or open a Notion page
+1. Create or open a Notion page (this will be your homepage)
 2. Make it **public**: Share → Publish to web
 3. Copy the page ID from the URL:
    - URL: `https://www.notion.so/My-Page-1234567890abcdef1234567890abcdef`
@@ -67,7 +69,7 @@ After editing your Notion page, use any of these methods:
 | Option | What it does | Speed | Chatbot Updated? |
 |--------|-------------|-------|------------------|
 | Single page (default) | Refresh current page only | ~1s | ❌ No |
-| Revalidate all pages | Refresh all 37 pages | ~5-10s | ❌ No |
+| Revalidate all pages | Refresh all pages in your site | ~5-10s | ❌ No |
 | Regenerate content | Full rebuild + content extraction | ~2-3 min | ✅ Yes |
 
 **Method 3: Bookmark (Recommended for Production)**
@@ -86,16 +88,27 @@ curl "http://localhost:3000/api/revalidate?secret=abc123xyz&all=true"
 curl "http://localhost:3000/api/rebuild?secret=abc123xyz"
 ```
 
-## 6. MindCache STM with Page Content
+## 6. AI Chat & MindCache (Optional)
 
-This project includes a MindCache STM that loads all page content on initialization:
+This project includes an AI chatbot with MindCache STM (Short-Term Memory):
 
-- **During Build**: All Notion page content is extracted and saved to `public/page-content.json`
-- **On Load**: The MindCache STM is initialized with all pages as `page:/{slug}` keys
-- **Usage**: Press **Cmd+Shift+D** to open the debug popup and inspect the STM
-- **Manual Generation**: Run `npm run generate-content` to regenerate page content
+**What it does:**
+- Gives visitors an AI assistant that knows your entire website content
+- Uses OpenAI API to answer questions based on your Notion pages
 
-The page content is automatically available to the AI chat interface through the MindCache system prompt.
+**Setup:**
+1. Add to `.env.local`:
+   ```bash
+   OPENAI_API_KEY=sk-...your-key...
+   ```
+
+2. **How it works:**
+   - During build: All page content is extracted to `public/page-content.json`
+   - On load: MindCache STM is initialized with all your pages
+   - Visitors can chat with AI that has full context of your site
+
+**Debug Mode:**
+- Press **Cmd+Shift+D** to inspect the STM and see what content is loaded
 
 ## 7. Deploy to Vercel
 
@@ -121,4 +134,7 @@ A: Yes! Edit `styles/globals.css` for custom styling.
 
 **Q: What if I forget the refresh button?**
 A: Just redeploy from Vercel dashboard or use the API endpoint.
+
+**Q: What happens if someone visits an invalid page?**
+A: Invalid pages automatically redirect to the homepage.
 

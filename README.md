@@ -1,6 +1,8 @@
-# Damien Henry - Personal Website
+# Notion-Powered Website
 
-A personal website powered by [Next.js](https://nextjs.org/) and [React-Notion-X](https://github.com/NotionX/react-notion-x), rendering content directly from Notion.
+A Next.js website that renders your Notion pages as a beautiful, fast website. Built with [React-Notion-X](https://github.com/NotionX/react-notion-x).
+
+**Perfect for:** Personal websites, documentation, blogs, portfolios - anything you can create in Notion.
 
 ## Setup
 
@@ -47,17 +49,17 @@ The easiest way to deploy is to use the [Vercel Platform](https://vercel.com/new
 
 ## Features
 
-- ✅ Renders Notion pages with full formatting support
-- ✅ **Subpage navigation** - All Notion subpages work automatically
-- ✅ Code syntax highlighting
-- ✅ Math equations (KaTeX)
-- ✅ Image support
-- ✅ Collections/Databases
-- ✅ Static site generation with ISR (revalidates every 60 seconds)
-- ✅ Fully responsive design
-- ✅ Dynamic routing for unlimited Notion pages
-- ✅ **SEO optimized** - Dynamic sitemap & robots.txt
-- ✅ Server-side rendering for crawlers (fallback: 'blocking')
+- ✅ **Full Notion Support** - Renders all Notion formatting (headings, lists, code blocks, tables, etc.)
+- ✅ **Subpage Navigation** - All Notion subpages work automatically with dynamic routing
+- ✅ **AI Chatbot** - Built-in chat interface with MindCache STM (context memory)
+- ✅ **Easy Content Updates** - Hidden refresh button to pull latest Notion changes
+- ✅ **Code Highlighting** - Syntax highlighting for code blocks
+- ✅ **Math Support** - KaTeX for equations
+- ✅ **Images & Media** - Full image and embed support
+- ✅ **Collections/Databases** - Notion database views
+- ✅ **Fast & SEO-Friendly** - Static generation with ISR, dynamic sitemap, server-side rendering
+- ✅ **Fully Responsive** - Works on all devices
+- ✅ **Auto-redirect** - Invalid pages redirect to homepage
 
 ## Updating Content from Notion
 
@@ -116,9 +118,26 @@ To automatically rebuild your site when you update Notion:
      -H "x-rebuild-token: your-secret-token"
    ```
 
+## AI Chat Feature
+
+The site includes an AI chatbot that knows your entire website:
+
+1. Add `OPENAI_API_KEY` to your environment variables
+2. During build, all page content is extracted to `public/page-content.json`
+3. The chatbot uses this content to answer visitor questions
+
+See `SETUP.md` for detailed configuration.
+
 ## Customization
 
 - Edit `styles/globals.css` to customize the appearance
 - Modify `pages/index.tsx` to adjust the page layout and settings
 - Update `next.config.js` to add more image domains if needed
+
+## How It Works
+
+1. **Build Time**: Fetches all Notion pages and generates static HTML
+2. **Runtime**: ISR (Incremental Static Regeneration) keeps pages fresh
+3. **Updates**: Use the hidden refresh button to pull latest Notion changes
+4. **New Pages**: Auto-generate on first visit or trigger full rebuild
 
