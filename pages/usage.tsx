@@ -256,6 +256,11 @@ export default function Usage() {
                             💬
                           </span>
                         )}
+                        {session.events.some(e => e.title?.toLowerCase().includes('404') || e.title?.toLowerCase().includes('not found')) && (
+                          <span className="text-xs bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300 px-2 py-1 rounded-full font-medium flex items-center gap-1" title="Contains 404 error">
+                            ⚠️
+                          </span>
+                        )}
                         <span className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full font-medium">
                           {session.eventCount} events
                         </span>
