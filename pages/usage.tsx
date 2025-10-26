@@ -251,6 +251,11 @@ export default function Usage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
+                        {session.events.some(e => e.eventType === 'chat_message') && (
+                          <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded-full font-medium flex items-center gap-1" title="Contains chat messages">
+                            💬
+                          </span>
+                        )}
                         <span className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full font-medium">
                           {session.eventCount} events
                         </span>
