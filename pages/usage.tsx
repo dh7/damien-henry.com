@@ -28,6 +28,7 @@ export default function Usage() {
   const [error, setError] = useState('');
   const [stats, setStats] = useState({ totalSessions: 0, totalEvents: 0 });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showOnlyChat, setShowOnlyChat] = useState(false);
 
   const handleLogin = async () => {
     if (!password.trim()) {
@@ -190,6 +191,17 @@ export default function Usage() {
           {sessions.length > 0 && (
             <div className="flex items-center gap-3">
               <button
+                onClick={() => setShowOnlyChat(!showOnlyChat)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
+                  showOnlyChat
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-750'
+                }`}
+              >
+                💬 {showOnlyChat ? 'Show All' : 'Chat Only'}
+              </button>
+              
+              <button
                 onClick={toggleSelectAll}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
               >
@@ -224,7 +236,9 @@ export default function Usage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {sessions.map((session) => (
+            {sessions
+              .filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message'))
+              .map((session) => (
               <div key={session.sessionId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="flex items-center">
                   <div className="p-4 border-r border-gray-200 dark:border-gray-700">
