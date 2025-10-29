@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
 interface Event {
@@ -29,6 +29,13 @@ export default function Usage() {
   const [stats, setStats] = useState({ totalSessions: 0, totalEvents: 0 });
   const [isDeleting, setIsDeleting] = useState(false);
   const [showOnlyChat, setShowOnlyChat] = useState(false);
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
+  // Reset selection state when filter changes
+  useEffect(() => {
+    setLastClickedIndex(null);
+    setSelectedSessions(new Set());
+  }, [showOnlyChat]);
 
   const handleLogin = async () => {
     if (!password.trim()) {
@@ -60,20 +67,37 @@ export default function Usage() {
   const handleDeleteSessions = async () => {
     if (selectedSessions.size === 0) return;
     
+    const sessionIdsToDelete = Array.from(selectedSessions);
+    console.log('Deleting sessions:', sessionIdsToDelete);
+    
     if (!confirm(`Delete ${selectedSessions.size} session(s)?`)) return;
 
     setIsDeleting(true);
+    setError('');
+    
     try {
+      console.log('Sending DELETE request...');
+      
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const response = await fetch('/api/messages', {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${password}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ sessionIds: Array.from(selectedSessions) })
+        body: JSON.stringify({ sessionIds: sessionIdsToDelete }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+
       if (response.ok) {
+        const data = await response.json();
+        console.log('Delete response:', data);
         const remaining = sessions.filter(s => !selectedSessions.has(s.sessionId));
         setSessions(remaining);
         setStats({
@@ -81,12 +105,21 @@ export default function Usage() {
           totalEvents: remaining.reduce((sum, s) => sum + s.eventCount, 0)
         });
         setSelectedSessions(new Set());
+        setLastClickedIndex(null);
       } else {
-        setError('Failed to delete sessions');
+        const data = await response.json().catch(() => ({}));
+        console.error('Delete failed:', data);
+        setError(`Failed to delete sessions: ${data.error || response.statusText}`);
       }
     } catch (err) {
-      setError('Error deleting sessions');
+      console.error('Delete error:', err);
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Delete operation timed out - the server may be slow. Try refreshing.');
+      } else {
+        setError(`Error deleting sessions: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     } finally {
+      console.log('Delete operation complete');
       setIsDeleting(false);
     }
   };
@@ -101,15 +134,35 @@ export default function Usage() {
     setExpandedSessions(newExpanded);
   };
 
-  const toggleSelectSession = (sessionId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const toggleSelectSession = (sessionId: string, currentIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     const newSelected = new Set(selectedSessions);
-    if (newSelected.has(sessionId)) {
-      newSelected.delete(sessionId);
+    
+    // Get filtered sessions (respecting the chat filter)
+    const filteredSessions = sessions.filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message'));
+    
+    // Handle shift-click for range selection
+    if ((e.nativeEvent as MouseEvent).shiftKey && lastClickedIndex !== null) {
+      const start = Math.min(lastClickedIndex, currentIndex);
+      const end = Math.max(lastClickedIndex, currentIndex);
+      
+      // Ensure we don't go out of bounds
+      for (let i = start; i <= end && i < filteredSessions.length; i++) {
+        if (filteredSessions[i]) {
+          newSelected.add(filteredSessions[i].sessionId);
+        }
+      }
     } else {
-      newSelected.add(sessionId);
+      // Normal toggle
+      if (newSelected.has(sessionId)) {
+        newSelected.delete(sessionId);
+      } else {
+        newSelected.add(sessionId);
+      }
     }
+    
     setSelectedSessions(newSelected);
+    setLastClickedIndex(currentIndex);
   };
 
   const toggleSelectAll = () => {
@@ -118,6 +171,7 @@ export default function Usage() {
     } else {
       setSelectedSessions(new Set(sessions.map(s => s.sessionId)));
     }
+    setLastClickedIndex(null);
   };
 
   if (!authenticated) {
@@ -238,14 +292,14 @@ export default function Usage() {
           <div className="space-y-3">
             {sessions
               .filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message'))
-              .map((session) => (
+              .map((session, index) => (
               <div key={session.sessionId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="flex items-center">
                   <div className="p-4 border-r border-gray-200 dark:border-gray-700">
                     <input
                       type="checkbox"
                       checked={selectedSessions.has(session.sessionId)}
-                      onChange={(e) => toggleSelectSession(session.sessionId, e)}
+                      onChange={(e) => toggleSelectSession(session.sessionId, index, e)}
                       className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     />

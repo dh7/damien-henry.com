@@ -16,9 +16,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(' ')[1];
   
-  if (token !== process.env.ADMIN_PASSWORD) {
+  if (!process.env.ADMIN_PASSWORD || !token || token !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  
+  // Basic rate limiting - deny if making too many requests
+  // (This is very basic - for production use a proper rate limiter like upstash/ratelimit)
 
   try {
     const redis = await getRedisClient();
@@ -34,26 +37,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid sessionIds' });
       }
 
+      console.log(`Deleting ${sessionIds.length} sessions:`, sessionIds);
+
       // Delete session-specific lists
-      for (const sessionId of sessionIds) {
-        await redis.del(`events:session:${sessionId}`);
-      }
-
-      // Remove events from events:all list
-      const rawEvents = await redis.lRange('events:all', 0, -1);
-      const events = rawEvents.map((e: string) => JSON.parse(e));
-      
-      // Filter out events for deleted sessions
-      const remainingEvents = events.filter((event: any) => 
-        !sessionIds.includes(event.sessionId)
+      const deletePromises = sessionIds.map((sessionId: string) => 
+        redis.del(`events:session:${sessionId}`)
       );
+      await Promise.all(deletePromises);
+      console.log('Deleted session-specific lists');
 
-      // Clear and rebuild events:all
+      // Remove events from events:all list - use pipeline for better performance
+      const rawEvents = await redis.lRange('events:all', 0, -1);
+      console.log(`Processing ${rawEvents.length} events`);
+      
+      const sessionIdSet = new Set(sessionIds);
+      const remainingEvents = rawEvents
+        .map((e: string) => {
+          try {
+            return JSON.parse(e);
+          } catch {
+            return null;
+          }
+        })
+        .filter((event: any) => event && !sessionIdSet.has(event.sessionId));
+
+      console.log(`${remainingEvents.length} events remaining after filter`);
+
+      // Clear and rebuild events:all using pipeline
       await redis.del('events:all');
-      for (const event of remainingEvents.reverse()) {
-        await redis.lPush('events:all', JSON.stringify(event));
+      
+      if (remainingEvents.length > 0) {
+        // Batch the operations for better performance
+        const pipeline = redis.multi();
+        for (const event of remainingEvents.reverse()) {
+          pipeline.lPush('events:all', JSON.stringify(event));
+        }
+        await pipeline.exec();
       }
 
+      console.log('Delete operation complete');
       return res.status(200).json({ success: true, deleted: sessionIds.length });
     }
 
