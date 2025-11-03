@@ -220,7 +220,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   // Filter out Next.js internal files (hot-update, static assets, etc.)
   if (!fullSlug || fullSlug.includes('_next') || fullSlug.includes('.json') || fullSlug.includes('webpack')) {
     return {
-      notFound: true,
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
     }
   }
 
@@ -239,7 +242,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       
       if (!foundPageId) {
         return {
-          notFound: true,
+          redirect: {
+            destination: '/',
+            permanent: false,
+          },
         }
       }
       actualPageId = foundPageId
@@ -322,9 +328,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       },
     }
   } catch (error) {
-    console.error('Error fetching Notion page:', error)
+    // Redirect to home for invalid pages
     return {
-      notFound: true,
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
     }
   }
 }
