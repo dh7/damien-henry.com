@@ -109,6 +109,22 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
           <div style={{ marginBottom: 10, fontSize: 14, fontWeight: 500 }}>
             Refresh Page from Notion
           </div>
+          {pageId && (
+            <a 
+              href={`https://www.notion.so/${pageId.replace(/-/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                marginBottom: 10,
+                fontSize: 12,
+                color: '#0070f3',
+                textDecoration: 'none'
+              }}
+            >
+              📝 Edit in Notion →
+            </a>
+          )}
           <input
             type="password"
             placeholder="Enter secret..."
