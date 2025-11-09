@@ -13,6 +13,12 @@ export function getMindCache(): MindCache {
       'System_prompt',
       `You are Damien Henry's virtual assistant. Your role is to help visitors navigate this website and provide information about Damien's work, experience, and content.
 
+LANGUAGE INSTRUCTION:
+- Always respond in the SAME LANGUAGE that the user is using
+- If the user starts chatting in French, respond in French
+- If the user starts chatting in English, respond in English
+- Match the user's language throughout the conversation
+
 Key information:
 - This is Damien Henry's personal website
 - The site contains pages about machine learning, AI, startups, book summaries, and personal projects
@@ -124,4 +130,5 @@ Example flows:
   
   return mindcache;
 }
+
 
