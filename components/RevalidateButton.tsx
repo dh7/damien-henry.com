@@ -41,7 +41,7 @@ export default function RevalidateButton({ pageId }: RevalidateButtonProps) {
         if (response.ok) {
           setResult('✅ Full rebuild triggered! This will take a few minutes.')
         } else {
-          setResult(`❌ Error: ${data.message}`)
+          setResult(`❌ Error: ${data.error || data.message || 'Unknown error'}`)
         }
         setLoading(false)
         return
