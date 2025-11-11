@@ -42,13 +42,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const redis = await getRedisClient();
       if (redis) {
         // Store in general events list
-        await redis.lPush('events:all', JSON.stringify(event));
+        await redis.lPush('events:damien-henry:all', JSON.stringify(event));
         
         // Store in session-specific list
-        await redis.lPush(`events:session:${sessionId}`, JSON.stringify(event));
+        await redis.lPush(`events:damien-henry:session:${sessionId}`, JSON.stringify(event));
         
         // Expire session data after 30 days
-        await redis.expire(`events:session:${sessionId}`, 60 * 60 * 24 * 30);
+        await redis.expire(`events:damien-henry:session:${sessionId}`, 60 * 60 * 24 * 30);
 
         return res.status(200).json({ success: true, logged: true });
       }

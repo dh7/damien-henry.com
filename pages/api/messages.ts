@@ -41,13 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Delete session-specific lists
       const deletePromises = sessionIds.map((sessionId: string) => 
-        redis.del(`events:session:${sessionId}`)
+        redis.del(`events:damien-henry:session:${sessionId}`)
       );
       await Promise.all(deletePromises);
       console.log('Deleted session-specific lists');
 
       // Remove events from events:all list - use pipeline for better performance
-      const rawEvents = await redis.lRange('events:all', 0, -1);
+      const rawEvents = await redis.lRange('events:damien-henry:all', 0, -1);
       console.log(`Processing ${rawEvents.length} events`);
       
       const sessionIdSet = new Set(sessionIds);
@@ -63,14 +63,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log(`${remainingEvents.length} events remaining after filter`);
 
-      // Clear and rebuild events:all using pipeline
-      await redis.del('events:all');
+      // Clear and rebuild events:damien-henry:all using pipeline
+      await redis.del('events:damien-henry:all');
       
       if (remainingEvents.length > 0) {
         // Batch the operations for better performance
         const pipeline = redis.multi();
         for (const event of remainingEvents.reverse()) {
-          pipeline.lPush('events:all', JSON.stringify(event));
+          pipeline.lPush('events:damien-henry:all', JSON.stringify(event));
         }
         await pipeline.exec();
       }
@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Handle GET request
     // Get last 1000 events
-    const rawEvents = await redis.lRange('events:all', 0, 999);
+    const rawEvents = await redis.lRange('events:damien-henry:all', 0, 999);
     const events = rawEvents.map((e: string) => JSON.parse(e));
     
     // Filter out events without sessionId and group by session

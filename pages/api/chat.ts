@@ -49,9 +49,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 userAgent: req.headers['user-agent']
               };
               
-              await redis.lPush('events:all', JSON.stringify(event));
-              await redis.lPush(`events:session:${sessionId}`, JSON.stringify(event));
-              await redis.expire(`events:session:${sessionId}`, 60 * 60 * 24 * 30);
+              await redis.lPush('events:damien-henry:all', JSON.stringify(event));
+              await redis.lPush(`events:damien-henry:session:${sessionId}`, JSON.stringify(event));
+              await redis.expire(`events:damien-henry:session:${sessionId}`, 60 * 60 * 24 * 30);
               console.log('✅ Chat message logged successfully');
             } else {
               console.warn('⚠️ No sessionId provided, skipping chat logging');
