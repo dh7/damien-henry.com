@@ -83,10 +83,10 @@ a {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
-/* Hide page icons */
-.notion-page-icon-wrapper,
+/* Hide page header icons only (not content page links) */
 .notion-page-icon-cover,
 .notion-page-icon-hero,
+.notion-page-cover .notion-page-icon-wrapper,
 .notion-collection-page-icon {
   display: none !important;
 }
@@ -140,11 +140,12 @@ a.notion-link-mention:hover {
   text-decoration-color: rgba(55, 53, 47, 0.8) !important;
 }
 
-/* Keep icon visible */
-.notion-link-mention .notion-page-icon {
-  display: inline-block !important;
-  margin-right: 4px !important;
-  vertical-align: middle !important;
+/* Hide icon and its container in inline mentions within text blocks only */
+.notion-text .notion-page-icon,
+.notion-text .notion-page-title-icon,
+.notion-text .notion-page-icon-inline,
+.notion-text .notion-page-icon-span {
+  display: none !important;
 }
 
 /* Hide the page title text after icon */
