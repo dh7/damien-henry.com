@@ -218,9 +218,13 @@ export default function WritePage() {
         <title>Write - Damien Henry</title>
       </Head>
       <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
-          {/* Left side: Chat */}
-          <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
+        {/* Left side: Chat */}
+        <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+          <div className="py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div
+              className="flex items-center justify-between w-full"
+              style={{ paddingLeft: '16px', paddingRight: '16px' }}
+            >
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 Writing Assistant
               </h2>
@@ -245,6 +249,7 @@ export default function WritePage() {
                 </svg>
               </button>
             </div>
+          </div>
             <div className="flex-1 flex flex-col min-h-0">
               <ChatConversation messages={messages} />
               <div className="border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -257,9 +262,13 @@ export default function WritePage() {
             </div>
           </div>
 
-          {/* Right side: Markdown Editor/Preview */}
-          <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
+        {/* Right side: Markdown Editor/Preview */}
+        <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
+          <div className="py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div
+              className="flex items-center justify-between w-full"
+              style={{ paddingLeft: '16px', paddingRight: '16px' }}
+            >
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 Markdown Editor
               </h2>
@@ -284,9 +293,14 @@ export default function WritePage() {
                 </span>
               </div>
             </div>
-            <div className="flex-1 overflow-hidden">
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="h-full w-full"
+              style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px' }}
+            >
               {previewMode ? (
-                <div className="w-full h-full p-6 overflow-y-auto prose prose-sm dark:prose-invert max-w-none">
+                <div className="w-full h-full p-6 overflow-y-auto prose prose-sm dark:prose-invert max-w-none bg-white dark:bg-gray-800">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {markdownContent || '*No content yet. Switch to Edit mode to start writing.*'}
                   </ReactMarkdown>
@@ -303,6 +317,7 @@ export default function WritePage() {
             </div>
           </div>
         </div>
+      </div>
     </>
   );
 }
