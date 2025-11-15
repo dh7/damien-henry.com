@@ -52,29 +52,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (action === 'chat') {
-      // Get server-side mindcache with readonly access to content
+      // Get server-side mindcache with readonly access to all content
       const mindcache = getMindCache();
       
-      // Add current draft to mindcache context
-      const systemPromptWithDraft = `You are a writing assistant helping Damien Henry create content for his website.
+      // Get the base system prompt which includes all page content via mindcache
+      const baseSystemPrompt = mindcache.get_system_prompt();
+      
+      // Augment with write-specific instructions and current draft
+      const systemPromptWithDraft = `${baseSystemPrompt}
 
-You have access to:
-1. All existing content on the website (readonly via mindcache)
-2. The current draft the user is working on (see draft_content below)
+---
 
-Current draft:
+ADDITIONAL CONTEXT FOR WRITING MODE:
+
+You are now in writing assistant mode, helping Damien create new content for his website.
+
+Current draft being worked on:
 ${currentDraft || '(empty)'}
 
 Your role:
-- Help brainstorm ideas
+- Help brainstorm ideas for new content
 - Suggest improvements to the draft
-- Reference relevant existing content
-- Provide writing feedback
-- Help structure content
+- Reference relevant existing content from the pages above
+- Provide writing feedback and structure suggestions
+- Help maintain consistency with existing content style
 
 Guidelines:
 - Be concise and actionable
-- Reference existing content when relevant
+- Reference existing content when relevant using the page content above
 - Suggest specific improvements
 - Ask clarifying questions when needed
 - You can suggest content but DO NOT automatically update the draft unless explicitly asked
