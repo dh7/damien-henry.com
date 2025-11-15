@@ -82,9 +82,23 @@ Guidelines:
 - Reference existing content when relevant using the page content above
 - Suggest specific improvements
 - Ask clarifying questions when needed
-- You can suggest content but DO NOT automatically update the draft unless explicitly asked
 
-When the user asks you to update/modify the draft, you can provide the updated content in your response.`;
+IMPORTANT: When the user asks you to write or update the draft content, you should:
+1. Include the complete updated markdown in your response
+2. Wrap it with the markers: <<<DRAFT_START>>> and <<<DRAFT_END>>>
+3. Everything between these markers will replace the current draft
+
+Example:
+User: "Write an intro paragraph about AI"
+Your response: "I'll write that for you:
+
+<<<DRAFT_START>>>
+# Introduction to AI
+
+Artificial Intelligence is transforming how we...
+<<<DRAFT_END>>>
+
+The draft has been updated with the intro paragraph."`;
 
       const result = await generateText({
         model: google('gemini-flash-latest'),
@@ -92,7 +106,17 @@ When the user asks you to update/modify the draft, you can provide the updated c
         system: systemPromptWithDraft,
       });
 
-      return res.status(200).json({ message: result.text });
+      // Check if the response contains a draft update
+      let updatedDraft: string | undefined;
+      const draftMatch = result.text.match(/<<<DRAFT_START>>>(.*)<<<DRAFT_END>>>/s);
+      if (draftMatch && draftMatch[1]) {
+        updatedDraft = draftMatch[1].trim();
+      }
+
+      return res.status(200).json({ 
+        message: result.text,
+        updatedDraft
+      });
     }
 
     return res.status(400).json({ error: 'Invalid action' });
