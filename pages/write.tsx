@@ -185,46 +185,44 @@ export default function WritePage() {
       <Head>
         <title>Write - Damien Henry</title>
       </Head>
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Left side: Chat */}
-        <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-black dark:text-white">
-              Writing Assistant
-            </h2>
-          </div>
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-hidden">
-              <ChatConversation messages={messages} />
+      <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
+          {/* Left side: Chat */}
+          <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <h2 className="text-lg font-semibold text-black dark:text-white">
+                Writing Assistant
+              </h2>
             </div>
-            <div className="border-t border-gray-200 dark:border-gray-700">
-              <ChatInput 
-                onSendMessage={handleSendMessage}
-                status={isLoading ? 'loading' : 'ready'}
-                variant="terminal"
+            <div className="flex-1 flex flex-col min-h-0">
+              <ChatConversation messages={messages} />
+              <div className="border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <ChatInput 
+                  onSendMessage={handleSendMessage}
+                  status={isLoading ? 'loading' : 'ready'}
+                  variant="terminal"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right side: Markdown Editor */}
+          <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <h2 className="text-lg font-semibold text-black dark:text-white">
+                Markdown Editor
+              </h2>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <textarea
+                value={markdownContent}
+                onChange={(e) => setMarkdownContent(e.target.value)}
+                className="w-full h-full p-6 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none resize-none font-mono text-sm"
+                placeholder="Start writing in markdown..."
+                spellCheck={false}
               />
             </div>
           </div>
         </div>
-
-        {/* Right side: Markdown Editor */}
-        <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-black dark:text-white">
-              Markdown Editor
-            </h2>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <textarea
-              value={markdownContent}
-              onChange={(e) => setMarkdownContent(e.target.value)}
-              className="w-full h-full p-6 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none resize-none font-mono text-sm"
-              placeholder="Start writing in markdown..."
-              spellCheck={false}
-            />
-          </div>
-        </div>
-      </div>
     </>
   );
 }
