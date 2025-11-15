@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import ChatConversation from '@/components/ChatConversation';
 import ChatInput from '@/components/ChatInput';
 
@@ -25,6 +27,7 @@ export default function WritePage() {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [markdownContent, setMarkdownContent] = useState('');
+  const [previewMode, setPreviewMode] = useState(false);
 
   // Check authentication on mount
   useEffect(() => {
@@ -205,21 +208,49 @@ export default function WritePage() {
             </div>
           </div>
 
-          {/* Right side: Markdown Editor */}
+          {/* Right side: Markdown Editor/Preview */}
           <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 Markdown Editor
               </h2>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${!previewMode ? 'text-black dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                  Edit
+                </span>
+                <button
+                  onClick={() => setPreviewMode(!previewMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    previewMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      previewMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm ${previewMode ? 'text-black dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                  Preview
+                </span>
+              </div>
             </div>
             <div className="flex-1 overflow-hidden">
-              <textarea
-                value={markdownContent}
-                onChange={(e) => setMarkdownContent(e.target.value)}
-                className="w-full h-full p-6 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none resize-none font-mono text-sm"
-                placeholder="Start writing in markdown..."
-                spellCheck={false}
-              />
+              {previewMode ? (
+                <div className="w-full h-full p-6 overflow-y-auto prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {markdownContent || '*No content yet. Switch to Edit mode to start writing.*'}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <textarea
+                  value={markdownContent}
+                  onChange={(e) => setMarkdownContent(e.target.value)}
+                  className="w-full h-full p-6 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none resize-none font-mono text-sm"
+                  placeholder="Start writing in markdown..."
+                  spellCheck={false}
+                />
+              )}
             </div>
           </div>
         </div>

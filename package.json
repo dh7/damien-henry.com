@@ -17,6 +17,7 @@
     "@ai-sdk/openai": "^2.0.52",
     "@ai-sdk/react": "^2.0.76",
     "@notionhq/client": "^2.2.14",
+    "@tailwindcss/typography": "^0.5.19",
     "@vercel/kv": "^1.0.1",
     "ai": "^5.0.76",
     "dotenv": "^17.2.3",
@@ -30,9 +31,11 @@
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-notion-x": "^7.0.0",
     "react-tweet": "^3.2.2",
     "redis": "^5.8.3",
+    "remark-gfm": "^4.0.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
