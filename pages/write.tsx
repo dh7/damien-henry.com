@@ -52,12 +52,22 @@ export default function WritePage() {
     checkAuth();
   }, []);
 
-  // Load markdown content from localStorage
+  // Load markdown content and messages from localStorage
   useEffect(() => {
     if (isAuthenticated && typeof window !== 'undefined') {
-      const saved = localStorage.getItem('draft_content');
-      if (saved) {
-        setMarkdownContent(saved);
+      const savedDraft = localStorage.getItem('draft_content');
+      if (savedDraft) {
+        setMarkdownContent(savedDraft);
+      }
+      
+      const savedMessages = localStorage.getItem('write_messages');
+      if (savedMessages) {
+        try {
+          const parsed = JSON.parse(savedMessages);
+          setMessages(parsed);
+        } catch (error) {
+          console.error('Failed to parse saved messages:', error);
+        }
       }
     }
   }, [isAuthenticated]);
@@ -68,6 +78,13 @@ export default function WritePage() {
       localStorage.setItem('draft_content', markdownContent);
     }
   }, [markdownContent, isAuthenticated]);
+
+  // Save messages to localStorage when they change
+  useEffect(() => {
+    if (isAuthenticated && typeof window !== 'undefined') {
+      localStorage.setItem('write_messages', JSON.stringify(messages));
+    }
+  }, [messages, isAuthenticated]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +105,18 @@ export default function WritePage() {
     } catch (error) {
       console.error('Login error:', error);
       alert('Login failed');
+    }
+  };
+
+  const handleClearMessages = () => {
+    if (confirm('Clear all messages? This cannot be undone.')) {
+      const welcomeMessage: Message = {
+        id: 'welcome',
+        role: 'assistant',
+        content: "Hi! I'm here to help you write content. I have access to all your existing content for reference. What would you like to work on?"
+      };
+      setMessages([welcomeMessage]);
+      localStorage.setItem('write_messages', JSON.stringify([welcomeMessage]));
     }
   };
 
@@ -191,10 +220,30 @@ export default function WritePage() {
       <div className="flex h-full overflow-hidden bg-gray-50 dark:bg-gray-900">
           {/* Left side: Chat */}
           <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-black dark:text-white">
                 Writing Assistant
               </h2>
+              <button
+                onClick={handleClearMessages}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Clear conversation"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
             </div>
             <div className="flex-1 flex flex-col min-h-0">
               <ChatConversation messages={messages} />
