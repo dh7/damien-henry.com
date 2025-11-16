@@ -69,6 +69,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       system: mindcache.get_system_prompt(),
     });
 
+    // Track chatbot answer (if enabled)
+    if (process.env.ENABLE_CHAT_LOGGING === 'true') {
+      try {
+        const redis = await getRedisClient();
+        if (redis && sessionId) {
+          const lastUserMessage = messages[messages.length - 1];
+          const answerText = result.text;
+          
+          // Extract the actual answer text (remove navigation markers if present)
+          const navMatch = answerText.match(/\[NAVIGATE:([^\]]+)\]\(([^)]+)\)/);
+          const displayAnswer = navMatch 
+            ? answerText.replace(navMatch[0], `Taking you to ${navMatch[1]}...`)
+            : answerText;
+          
+          const event = {
+            sessionId,
+            eventType: 'chat_answer',
+            question: lastUserMessage?.role === 'user' ? lastUserMessage.content : '',
+            answer: displayAnswer,
+            timestamp: new Date().toISOString(),
+            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            userAgent: req.headers['user-agent']
+          };
+          
+          await redis.lPush('events:damien-henry:all', JSON.stringify(event));
+          await redis.lPush(`events:damien-henry:session:${sessionId}`, JSON.stringify(event));
+          await redis.expire(`events:damien-henry:session:${sessionId}`, 60 * 60 * 24 * 30);
+          console.log('✅ Chat answer logged successfully');
+        }
+      } catch (redisError) {
+        console.error('❌ Failed to log chat answer:', redisError);
+      }
+    }
+
     // Check if the response contains navigation intent
     const navMatch = result.text.match(/\[NAVIGATE:([^\]]+)\]\(([^)]+)\)/);
     if (navMatch) {

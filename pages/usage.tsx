@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
 interface Event {
-  eventType: 'page_view' | 'chat_message';
+  eventType: 'page_view' | 'chat_message' | 'chat_answer';
   timestamp: string;
   path?: string;
   title?: string;
   content?: string;
+  question?: string;
+  answer?: string;
   ip?: string;
   userAgent?: string;
 }
@@ -139,7 +141,7 @@ export default function Usage() {
     const newSelected = new Set(selectedSessions);
     
     // Get filtered sessions (respecting the chat filter)
-    const filteredSessions = sessions.filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message'));
+    const filteredSessions = sessions.filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message' || e.eventType === 'chat_answer'));
     
     // Handle shift-click for range selection
     if ((e.nativeEvent as MouseEvent).shiftKey && lastClickedIndex !== null) {
@@ -291,7 +293,7 @@ export default function Usage() {
         ) : (
           <div className="space-y-3">
             {sessions
-              .filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message'))
+              .filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message' || e.eventType === 'chat_answer'))
               .map((session, index) => (
               <div key={session.sessionId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="flex items-center">
@@ -319,7 +321,7 @@ export default function Usage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        {session.events.some(e => e.eventType === 'chat_message') && (
+                        {session.events.some(e => e.eventType === 'chat_message' || e.eventType === 'chat_answer') && (
                           <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded-full font-medium flex items-center gap-1" title="Contains chat messages">
                             💬
                           </span>
@@ -361,6 +363,28 @@ export default function Usage() {
                                   <p className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5">
                                     {event.path}
                                   </p>
+                                </div>
+                              </div>
+                            ) : event.eventType === 'chat_answer' ? (
+                              <div className="flex flex-col gap-2">
+                                <div className="flex items-start gap-2">
+                                  <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded font-medium">
+                                    Q&A
+                                  </span>
+                                  <div className="flex-1 space-y-1">
+                                    <div>
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Q: </span>
+                                      <p className="text-sm text-gray-900 dark:text-gray-100 inline">
+                                        {event.question}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">A: </span>
+                                      <p className="text-sm text-gray-700 dark:text-gray-300 inline">
+                                        {event.answer}
+                                      </p>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             ) : (
