@@ -60,10 +60,29 @@ Example flows:
     
     // Load page content from build-time generated file
     try {
-      const pageContentFile = path.join(process.cwd(), 'public', 'page-content-prod.json');
-      const pageContents = JSON.parse(fs.readFileSync(pageContentFile, 'utf-8'));
+      // In dev mode, use page IDs as slugs (what Next.js expects)
+      // In production, use friendly slugs
+      const isDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL;
+      const fileName = isDev ? 'page-content-dev.json' : 'page-content-prod.json';
+      const pageContentFile = path.join(process.cwd(), 'public', fileName);
       
-      console.log(`📚 Loading ${pageContents.length} pages into server mindcache...`);
+      // Fallback to page-content.json if environment-specific file doesn't exist
+      let pageContents;
+      let loadedFile = fileName;
+      if (fs.existsSync(pageContentFile)) {
+        pageContents = JSON.parse(fs.readFileSync(pageContentFile, 'utf-8'));
+      } else {
+        const fallbackFile = path.join(process.cwd(), 'public', 'page-content.json');
+        if (fs.existsSync(fallbackFile)) {
+          console.warn(`⚠️ ${fileName} not found, using page-content.json`);
+          pageContents = JSON.parse(fs.readFileSync(fallbackFile, 'utf-8'));
+          loadedFile = 'page-content.json';
+        } else {
+          throw new Error(`Page content file not found: ${fileName} or page-content.json`);
+        }
+      }
+      
+      console.log(`📚 Loading ${pageContents.length} pages into server mindcache from ${loadedFile} (${isDev ? 'DEV' : 'PROD'} mode)...`);
       
       const urlMapping: Record<string, string> = {};
       
