@@ -18,7 +18,7 @@ export default function Layout({ children }: LayoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Pages where chat should be hidden
-  const hideChatPages = ['/usage'];
+  const hideChatPages = ['/usage', '/write'];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
