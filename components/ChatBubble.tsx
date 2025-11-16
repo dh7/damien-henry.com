@@ -28,7 +28,7 @@ export default function ChatBubble({ chatWidth = 33.33 }: ChatBubbleProps) {
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hi! I'm Damien Henry digital counterpart - feel free to ask me anything about my work, projects, or thoughts on AI and tech."
+      content: "Hi! I'm Damien Henry digital counterpart. Feel free to ask me anything about my work, projects, or thoughts on AI and tech."
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
