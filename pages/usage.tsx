@@ -366,26 +366,13 @@ export default function Usage() {
                                 </div>
                               </div>
                             ) : event.eventType === 'chat_answer' ? (
-                              <div className="flex flex-col gap-2">
-                                <div className="flex items-start gap-2">
-                                  <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded font-medium">
-                                    Q&A
-                                  </span>
-                                  <div className="flex-1 space-y-1">
-                                    <div>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Q: </span>
-                                      <p className="text-sm text-gray-900 dark:text-gray-100 inline">
-                                        {event.question}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">A: </span>
-                                      <p className="text-sm text-gray-700 dark:text-gray-300 inline">
-                                        {event.answer}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
+                              <div className="flex items-start gap-2">
+                                <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 px-2 py-1 rounded font-medium">
+                                  ANSWER
+                                </span>
+                                <p className="text-sm text-gray-900 dark:text-gray-100 flex-1">
+                                  {event.answer}
+                                </p>
                               </div>
                             ) : (
                               <div className="flex items-start gap-2">
