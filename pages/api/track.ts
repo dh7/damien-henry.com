@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from 'redis';
+import { getCountryFromIP } from '@/lib/ipGeolocation';
 
 let redisClient: any = null;
 
@@ -28,13 +29,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing sessionId' });
     }
 
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const event = {
       sessionId,
       eventType,
       path,
       title,
       timestamp: timestamp || new Date().toISOString(),
-      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+      ip: ip,
+      country: getCountryFromIP(ip),
       userAgent: req.headers['user-agent']
     };
 

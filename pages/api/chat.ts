@@ -3,6 +3,7 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { createClient } from 'redis';
 import { getMindCache } from '@/lib/serverMindCache';
+import { getCountryFromIP } from '@/lib/ipGeolocation';
 
 let redisClient: any = null;
 
@@ -37,17 +38,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (redis) {
           const lastMessage = messages[messages.length - 1];
           console.log('💬 Last message role:', lastMessage?.role);
-          if (lastMessage?.role === 'user') {
-            // Only track if we have a valid sessionId
-            if (sessionId) {
-              const event = {
-                sessionId,
-                eventType: 'chat_message',
-                content: lastMessage.content,
-                timestamp: new Date().toISOString(),
-                ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-                userAgent: req.headers['user-agent']
-              };
+            if (lastMessage?.role === 'user') {
+              // Only track if we have a valid sessionId
+              if (sessionId) {
+                const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+                const event = {
+                  sessionId,
+                  eventType: 'chat_message',
+                  content: lastMessage.content,
+                  timestamp: new Date().toISOString(),
+                  ip: ip,
+                  country: getCountryFromIP(ip),
+                  userAgent: req.headers['user-agent']
+                };
               
               await redis.lPush('events:damien-henry:all', JSON.stringify(event));
               await redis.lPush(`events:damien-henry:session:${sessionId}`, JSON.stringify(event));
@@ -83,13 +86,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ? answerText.replace(navMatch[0], `Taking you to ${navMatch[1]}...`)
             : answerText;
           
+          const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
           const event = {
             sessionId,
             eventType: 'chat_answer',
             question: lastUserMessage?.role === 'user' ? lastUserMessage.content : '',
             answer: displayAnswer,
             timestamp: new Date().toISOString(),
-            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            ip: ip,
+            country: getCountryFromIP(ip),
             userAgent: req.headers['user-agent']
           };
           
