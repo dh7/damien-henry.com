@@ -502,7 +502,7 @@ export default function AllUsage() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={graphData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }} animationDuration={0}>
+                <AreaChart data={graphData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     {Array.from(new Set(sessions.map(s => s.prefix).filter(Boolean))).map((prefix) => {
                       // Map Tailwind colors to hex values
