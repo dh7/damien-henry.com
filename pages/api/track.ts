@@ -13,6 +13,14 @@ async function getRedisClient() {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -30,6 +38,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    let country: string | null = null;
+    try {
+      country = getCountryFromIP(ip);
+    } catch (error) {
+      // Silently fail if geoip lookup fails (e.g., missing data files)
+      console.warn('Failed to get country from IP:', error);
+    }
+    
     const event = {
       sessionId,
       eventType,
@@ -37,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       title,
       timestamp: timestamp || new Date().toISOString(),
       ip: ip,
-      country: getCountryFromIP(ip),
+      country: country,
       userAgent: req.headers['user-agent']
     };
 

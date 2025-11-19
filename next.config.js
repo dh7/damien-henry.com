@@ -16,31 +16,8 @@ const nextConfig = {
     },
   },
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Prevent geoip-lite from being externalized so its data files are included
-      const originalExternals = config.externals;
-      config.externals = [
-        (context, request, callback) => {
-          // Don't externalize geoip-lite - we need its data files bundled
-          if (request && typeof request === 'string' && request.includes('geoip-lite')) {
-            return callback();
-          }
-          // Use original externals logic for other modules
-          if (typeof originalExternals === 'function') {
-            return originalExternals(context, request, callback);
-          }
-          if (Array.isArray(originalExternals)) {
-            for (const external of originalExternals) {
-              if (typeof external === 'function') {
-                const result = external(context, request, callback);
-                if (result !== undefined) return result;
-              }
-            }
-          }
-          callback();
-        },
-      ];
-    }
+    // Simplified: just rely on outputFileTracingIncludes to include the data files
+    // No need to modify externals
     return config;
   },
   // Temporary redirects
