@@ -18,7 +18,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const authHeader = req.headers.authorization;
   const token = authHeader?.split(' ')[1];
   
-  if (!process.env.ADMIN_PASSWORD || !token || token !== process.env.ADMIN_PASSWORD) {
+  // Trim whitespace from environment variable and token
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+  const providedToken = token?.trim();
+  
+  // Debug logging (remove in production if needed)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Auth check:', {
+      hasEnvVar: !!adminPassword,
+      envVarLength: adminPassword?.length,
+      hasToken: !!providedToken,
+      tokenLength: providedToken?.length,
+      match: adminPassword === providedToken
+    });
+  }
+  
+  if (!adminPassword || !providedToken || providedToken !== adminPassword) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

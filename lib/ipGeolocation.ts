@@ -20,7 +20,12 @@ export function getCountryFromIP(ip: string | string[] | undefined): string | nu
   try {
     const geo = geoip.lookup(ipAddress);
     return geo?.country || null;
-  } catch (error) {
+  } catch (error: any) {
+    // Handle missing data files gracefully (common in serverless environments)
+    if (error.code === 'ENOENT' || error.message?.includes('geoip-country.dat')) {
+      console.warn('GeoIP data files not found, skipping country lookup');
+      return null;
+    }
     console.error('Error looking up IP geolocation:', error);
     return null;
   }
