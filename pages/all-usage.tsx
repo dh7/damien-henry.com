@@ -168,6 +168,9 @@ export default function AllUsage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
       
+      // Get the full session objects for the sessions being deleted to include their prefixes
+      const sessionsToDelete = sessions.filter(s => sessionIdsToDelete.includes(s.sessionId));
+      
       const response = await fetch('/api/all-messages', {
         method: 'DELETE',
         headers: {
@@ -176,7 +179,8 @@ export default function AllUsage() {
         },
         body: JSON.stringify({ 
           sessionIds: sessionIdsToDelete,
-          prefix: selectedPrefix || undefined
+          prefix: selectedPrefix || undefined,
+          sessions: sessionsToDelete.map(s => ({ sessionId: s.sessionId, prefix: s.prefix }))
         }),
         signal: controller.signal
       });

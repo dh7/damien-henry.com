@@ -48,48 +48,77 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Handle DELETE request
     if (req.method === 'DELETE') {
-      const { sessionIds, prefix: deletePrefix } = req.body;
+      const { sessionIds, prefix: deletePrefix, sessions } = req.body;
       
       if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
         return res.status(400).json({ error: 'Invalid sessionIds' });
       }
 
+      // If sessions array is provided, use it to get prefixes for each session
+      // Otherwise, use the provided prefix or query prefix
+      const sessionPrefixMap = new Map<string, string>();
+      if (Array.isArray(sessions)) {
+        sessions.forEach((session: any) => {
+          if (session.sessionId && session.prefix) {
+            sessionPrefixMap.set(session.sessionId, session.prefix);
+          }
+        });
+      }
+
       const actualPrefix = deletePrefix || prefix || 'damien-henry';
       console.log(`Deleting ${sessionIds.length} sessions with prefix: ${actualPrefix}`);
 
-      // Delete session-specific lists
-      const deletePromises = sessionIds.map((sessionId: string) => 
-        redis.del(`events:${actualPrefix}:session:${sessionId}`)
-      );
-      await Promise.all(deletePromises);
-      console.log('Deleted session-specific lists');
-
-      // Remove events from events:all list
-      const rawEvents = await redis.lRange(`events:${actualPrefix}:all`, 0, -1);
-      console.log(`Processing ${rawEvents.length} events`);
-      
-      const sessionIdSet = new Set(sessionIds);
-      const remainingEvents = rawEvents
-        .map((e: string) => {
-          try {
-            return JSON.parse(e);
-          } catch {
-            return null;
-          }
-        })
-        .filter((event: any) => event && !sessionIdSet.has(event.sessionId));
-
-      console.log(`${remainingEvents.length} events remaining after filter`);
-
-      // Clear and rebuild events:all list using pipeline
-      await redis.del(`events:${actualPrefix}:all`);
-      
-      if (remainingEvents.length > 0) {
-        const pipeline = redis.multi();
-        for (const event of remainingEvents.reverse()) {
-          pipeline.lPush(`events:${actualPrefix}:all`, JSON.stringify(event));
+      // Group sessions by prefix
+      const sessionsByPrefix = new Map<string, string[]>();
+      sessionIds.forEach((sessionId: string) => {
+        const sessionPrefix = sessionPrefixMap.get(sessionId) || actualPrefix;
+        if (!sessionsByPrefix.has(sessionPrefix)) {
+          sessionsByPrefix.set(sessionPrefix, []);
         }
-        await pipeline.exec();
+        sessionsByPrefix.get(sessionPrefix)!.push(sessionId);
+      });
+
+      console.log(`Deleting sessions across ${sessionsByPrefix.size} prefix(es):`, 
+        Array.from(sessionsByPrefix.keys()).join(', '));
+
+      // Delete sessions for each prefix
+      for (const [sessionPrefix, prefixSessionIds] of sessionsByPrefix.entries()) {
+        console.log(`Deleting ${prefixSessionIds.length} sessions for prefix: ${sessionPrefix}`);
+
+        // Delete session-specific lists
+        const deletePromises = prefixSessionIds.map((sessionId: string) => 
+          redis.del(`events:${sessionPrefix}:session:${sessionId}`)
+        );
+        await Promise.all(deletePromises);
+        console.log(`Deleted session-specific lists for prefix: ${sessionPrefix}`);
+
+        // Remove events from events:all list
+        const rawEvents = await redis.lRange(`events:${sessionPrefix}:all`, 0, -1);
+        console.log(`Processing ${rawEvents.length} events for prefix: ${sessionPrefix}`);
+        
+        const sessionIdSet = new Set(prefixSessionIds);
+        const remainingEvents = rawEvents
+          .map((e: string) => {
+            try {
+              return JSON.parse(e);
+            } catch {
+              return null;
+            }
+          })
+          .filter((event: any) => event && !sessionIdSet.has(event.sessionId));
+
+        console.log(`${remainingEvents.length} events remaining after filter for prefix: ${sessionPrefix}`);
+
+        // Clear and rebuild events:all list using pipeline
+        await redis.del(`events:${sessionPrefix}:all`);
+        
+        if (remainingEvents.length > 0) {
+          const pipeline = redis.multi();
+          for (const event of remainingEvents.reverse()) {
+            pipeline.lPush(`events:${sessionPrefix}:all`, JSON.stringify(event));
+          }
+          await pipeline.exec();
+        }
       }
 
       console.log('Delete operation complete');
