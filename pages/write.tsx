@@ -41,6 +41,11 @@ export default function WritePage() {
         
         if (response.ok) {
           setIsAuthenticated(true);
+        } else if (response.status === 401) {
+          // 401 is expected when not authenticated, just show login form
+          setIsAuthenticated(false);
+        } else {
+          console.error('Auth check failed with status:', response.status);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
