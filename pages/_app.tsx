@@ -14,6 +14,18 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter()
 
   useEffect(() => {
+    // Keyboard shortcut: Shift+Cmd+U to open usage page
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && e.metaKey && e.key.toLowerCase() === 'u') {
+        e.preventDefault()
+        router.push('/all-usage')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [router])
+
+  useEffect(() => {
     // Load lite-youtube-embed script
     if (typeof window !== 'undefined') {
       import('lite-youtube-embed').catch(() => {

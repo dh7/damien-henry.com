@@ -269,6 +269,29 @@ export default function AllUsage() {
     }
   });
 
+  // Group sessions by day when in chronological mode
+  const sessionsByDay = useMemo(() => {
+    if (sortBy !== 'lastActivity') return null;
+    
+    const filtered = sortedSessions.filter(session => 
+      !showOnlyChat || session.events.some(e => e.eventType === 'chat_message' || e.eventType === 'chat_answer')
+    );
+    
+    const groups: Record<string, Session[]> = {};
+    filtered.forEach(session => {
+      const day = new Date(session.lastSeen).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      if (!groups[day]) groups[day] = [];
+      groups[day].push(session);
+    });
+    
+    return groups;
+  }, [sortedSessions, sortBy, showOnlyChat]);
+
   // Process data for graph view
   const graphData = useMemo(() => {
     // Filter sessions based on current filters
@@ -408,17 +431,20 @@ export default function AllUsage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Usage Analytics</h1>
-              <button
-                onClick={() => setViewMode(viewMode === 'list' ? 'graph' : 'list')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                  viewMode === 'graph'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-750'
-                }`}
-                title={viewMode === 'graph' ? 'Switch to List View' : 'Switch to Graph View'}
-              >
-                {viewMode === 'graph' ? '📊 Graph' : '📋 List'}
-              </button>
+              <label className="flex items-center gap-1.5 cursor-pointer" title={viewMode === 'graph' ? 'Switch to List View' : 'Switch to Graph View'}>
+                <span>📋</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={viewMode === 'graph'}
+                    onChange={() => setViewMode(viewMode === 'list' ? 'graph' : 'list')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500 transition-colors"></div>
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
+                </div>
+                <span>📊</span>
+              </label>
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               {stats.totalSessions} sessions · {stats.totalEvents} events
@@ -439,28 +465,35 @@ export default function AllUsage() {
                 ))}
               </select>
               
-              <button
-                onClick={() => setSortBy(sortBy === 'lastActivity' ? 'eventCount' : 'lastActivity')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                  sortBy === 'eventCount'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-750'
-                }`}
-                title={sortBy === 'eventCount' ? 'Sort by: Event Count' : 'Sort by: Last Activity'}
-              >
-                {sortBy === 'eventCount' ? '📊 Events' : '🕐 Recent'}
-              </button>
+              <label className="flex items-center gap-1.5 cursor-pointer" title="Sort by Recent / Events">
+                <span>🕐</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={sortBy === 'eventCount'}
+                    onChange={() => setSortBy(sortBy === 'lastActivity' ? 'eventCount' : 'lastActivity')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500 transition-colors"></div>
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
+                </div>
+                <span>📊</span>
+              </label>
               
-              <button
-                onClick={() => setShowOnlyChat(!showOnlyChat)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ${
-                  showOnlyChat
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-750'
-                }`}
-              >
-                💬 {showOnlyChat ? 'Show All' : 'Chat Only'}
-              </button>
+              <label className="flex items-center gap-1.5 cursor-pointer" title="Show All / Chat Only">
+                <span>👁️</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={showOnlyChat}
+                    onChange={() => setShowOnlyChat(!showOnlyChat)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:bg-purple-600 peer-focus:ring-2 peer-focus:ring-purple-500 transition-colors"></div>
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
+                </div>
+                <span>💬</span>
+              </label>
               
               <button
                 onClick={toggleSelectAll}
@@ -624,12 +657,67 @@ export default function AllUsage() {
               </ResponsiveContainer>
             )}
           </div>
+        ) : sessionsByDay ? (
+          // Grouped by day view (chronological mode)
+          <div className="space-y-6">
+            {Object.entries(sessionsByDay).map(([day, daySessions]) => (
+              <div key={day}>
+                <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 sticky top-0 bg-gray-50 dark:bg-gray-900 py-2 px-1 -mx-1 z-10 border-b border-gray-200 dark:border-gray-700">
+                  {day} <span className="font-normal text-gray-400 dark:text-gray-500">({daySessions.length} sessions)</span>
+                </h2>
+                <div className="space-y-3">
+                  {daySessions.map((session, index) => {
+                    const globalIndex = sortedSessions.findIndex(s => s.sessionId === session.sessionId);
+                    return (
+                      <SessionCard
+                        key={session.sessionId}
+                        session={session}
+                        index={globalIndex}
+                        expandedSessions={expandedSessions}
+                        selectedSessions={selectedSessions}
+                        toggleSession={toggleSession}
+                        toggleSelectSession={toggleSelectSession}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
+          // Flat list view (by event count)
           <div className="space-y-3">
             {sortedSessions
               .filter(session => !showOnlyChat || session.events.some(e => e.eventType === 'chat_message' || e.eventType === 'chat_answer'))
               .map((session, index) => (
-              <div key={session.sessionId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <SessionCard
+                key={session.sessionId}
+                session={session}
+                index={index}
+                expandedSessions={expandedSessions}
+                selectedSessions={selectedSessions}
+                toggleSession={toggleSession}
+                toggleSelectSession={toggleSelectSession}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// SessionCard component extracted for reuse
+function SessionCard({ session, index, expandedSessions, selectedSessions, toggleSession, toggleSelectSession }: {
+  session: Session;
+  index: number;
+  expandedSessions: Set<string>;
+  selectedSessions: Set<string>;
+  toggleSession: (sessionId: string) => void;
+  toggleSelectSession: (sessionId: string, currentIndex: number, e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="flex items-center">
                   <div className="p-4 border-r border-gray-200 dark:border-gray-700">
                     <input
@@ -656,9 +744,15 @@ export default function AllUsage() {
                               </span>
                             );
                           })()}
-                          <p className="font-mono text-sm text-gray-900 dark:text-gray-100 truncate">
-                            {session.sessionId}
-                          </p>
+                          {expandedSessions.has(session.sessionId) ? (
+                            <p className="font-mono text-sm text-gray-900 dark:text-gray-100 truncate">
+                              {session.sessionId}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
+                              {session.events.find(e => e.eventType === 'page_view')?.title || session.events[0]?.path || 'No page view'}
+                            </p>
+                          )}
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {new Date(session.firstSeen).toLocaleString()} → {new Date(session.lastSeen).toLocaleString()}
@@ -751,11 +845,6 @@ export default function AllUsage() {
                     )}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
