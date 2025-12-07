@@ -10,10 +10,8 @@ const nextConfig = {
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
   },
   // Include geoip-lite data files in Vercel serverless bundle
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/**': ['./node_modules/geoip-lite/data/**'],
-    },
+  outputFileTracingIncludes: {
+    '/api/**': ['./node_modules/geoip-lite/data/**'],
   },
   webpack: (config, { isServer }) => {
     // Simplified: just rely on outputFileTracingIncludes to include the data files

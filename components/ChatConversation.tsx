@@ -14,8 +14,8 @@ interface ChatConversationProps {
 }
 
 // Parse markdown formatting and convert to React elements
-function parseMarkdown(text: string): (string | JSX.Element)[] {
-  const parts: (string | JSX.Element)[] = [];
+function parseMarkdown(text: string): (string | React.ReactNode)[] {
+  const parts: (string | React.ReactNode)[] = [];
   let currentIndex = 0;
   let keyCounter = 0;
 
