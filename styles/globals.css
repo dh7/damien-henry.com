@@ -515,6 +515,15 @@ lite-youtube:hover > .lty-playbtn {
   padding-bottom: 10vh !important;
 }
 
+/* Remove extra top spacing when no cover image (icon space is hidden) */
+.notion-page-no-cover {
+  padding-top: 0 !important;
+}
+
+.notion-page-no-cover .notion-title {
+  margin-top: 12px !important;
+}
+
 /* Resizable divider hover effect */
 .resize-divider:hover .resize-handle,
 .resize-divider:active .resize-handle {
