@@ -146,13 +146,41 @@ export default function Layout({ children }: LayoutProps) {
                   Press Cmd+Shift+D or Esc to close
                 </p>
               </div>
-              <button
-                onClick={() => setShowDebug(false)}
-                className="text-green-600 hover:text-red-400 font-mono text-2xl leading-none px-2"
-                title="Close (Esc)"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/mindcache');
+                      if (response.ok) {
+                        const data = await response.json();
+                        const jsonStr = JSON.stringify(data, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `mindcache-export-${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }
+                    } catch (error) {
+                      console.error('Failed to export JSON:', error);
+                    }
+                  }}
+                  className="text-green-400 hover:text-green-300 font-mono text-sm px-3 py-1 border border-green-400 rounded hover:bg-green-900 hover:bg-opacity-20 transition-colors"
+                  title="Export as JSON"
+                >
+                  Export as JSON
+                </button>
+                <button
+                  onClick={() => setShowDebug(false)}
+                  className="text-green-600 hover:text-red-400 font-mono text-2xl leading-none px-2"
+                  title="Close (Esc)"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             
             <STMEditor />
