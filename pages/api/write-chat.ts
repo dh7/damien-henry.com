@@ -2,12 +2,50 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { getMindCache } from '@/lib/serverMindCache';
+import crypto from 'crypto';
 
-// Simple session-based authentication
-const sessions = new Set<string>();
+// Stateless token-based authentication using HMAC
+// Tokens are signed with WRITE_PASSWORD and include expiration
+const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function getSecret(): string {
+  // Use WRITE_PASSWORD as the signing secret
+  return process.env.WRITE_PASSWORD || 'changeme';
+}
 
 function generateSessionToken(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  const expiry = Date.now() + TOKEN_EXPIRY_MS;
+  const payload = `write_session:${expiry}`;
+  const signature = crypto
+    .createHmac('sha256', getSecret())
+    .update(payload)
+    .digest('hex');
+  return `${expiry}.${signature}`;
+}
+
+function validateSessionToken(token: string): boolean {
+  if (!token) return false;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+
+  const [expiryStr, signature] = parts;
+  const expiry = parseInt(expiryStr, 10);
+
+  // Check if expired
+  if (isNaN(expiry) || Date.now() > expiry) return false;
+
+  // Verify signature
+  const payload = `write_session:${expiry}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', getSecret())
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -18,17 +56,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { action, password, messages, currentDraft } = req.body;
 
   // Check authentication
-  const sessionToken = req.cookies.write_session;
+  const sessionToken = req.cookies.write_session || '';
 
   try {
     // Handle authentication
     if (action === 'authenticate') {
       const correctPassword = process.env.WRITE_PASSWORD || 'changeme';
-      
+
       if (password === correctPassword) {
         const token = generateSessionToken();
-        sessions.add(token);
-        
+
         // Set cookie for 24 hours
         res.setHeader('Set-Cookie', `write_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`);
         return res.status(200).json({ success: true });
@@ -39,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check auth for all other actions
     if (action === 'check_auth') {
-      if (sessionToken && sessions.has(sessionToken)) {
+      if (validateSessionToken(sessionToken)) {
         return res.status(200).json({ authenticated: true });
       } else {
         return res.status(401).json({ authenticated: false });
@@ -47,17 +84,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Require authentication for chat
-    if (!sessionToken || !sessions.has(sessionToken)) {
+    if (!validateSessionToken(sessionToken)) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     if (action === 'chat') {
       // Get server-side mindcache with readonly access to all content
       const mindcache = getMindCache();
-      
+
       // Get the base system prompt which includes all page content via mindcache
       const baseSystemPrompt = mindcache.get_system_prompt();
-      
+
       // Augment with write-specific instructions and current draft
       const systemPromptWithDraft = `${baseSystemPrompt}
 
@@ -113,7 +150,7 @@ The draft has been updated with the intro paragraph."`;
         updatedDraft = draftMatch[1].trim();
       }
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: result.text,
         updatedDraft
       });

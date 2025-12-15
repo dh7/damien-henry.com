@@ -17,7 +17,7 @@ export default function WritePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -38,7 +38,7 @@ export default function WritePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'check_auth' }),
         });
-        
+
         if (response.ok) {
           setIsAuthenticated(true);
         } else if (response.status === 401) {
@@ -53,7 +53,7 @@ export default function WritePage() {
         setIsCheckingAuth(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
@@ -64,7 +64,7 @@ export default function WritePage() {
       if (savedDraft) {
         setMarkdownContent(savedDraft);
       }
-      
+
       const savedMessages = localStorage.getItem('write_messages');
       if (savedMessages) {
         try {
@@ -93,14 +93,14 @@ export default function WritePage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const response = await fetch('/api/write-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'authenticate', password }),
       });
-      
+
       if (response.ok) {
         setIsAuthenticated(true);
         setPassword('');
@@ -131,7 +131,7 @@ export default function WritePage() {
       role: 'user',
       content
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
@@ -151,14 +151,14 @@ export default function WritePage() {
       }
 
       const data = await response.json();
-      
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: data.message || 'No response'
       };
       setMessages(prev => [...prev, assistantMessage]);
-      
+
       // Update markdown if the response includes it
       if (data.updatedDraft) {
         setMarkdownContent(data.updatedDraft);
@@ -202,6 +202,7 @@ export default function WritePage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="current-password"
               autoFocus
             />
             <button
@@ -255,17 +256,17 @@ export default function WritePage() {
               </button>
             </div>
           </div>
-            <div className="flex-1 flex flex-col min-h-0">
-              <ChatConversation messages={messages} />
-              <div className="border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <ChatInput 
-                  onSendMessage={handleSendMessage}
-                  status={isLoading ? 'loading' : 'ready'}
-                  variant="terminal"
-                />
-              </div>
+          <div className="flex-1 flex flex-col min-h-0">
+            <ChatConversation messages={messages} />
+            <div className="border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                status={isLoading ? 'loading' : 'ready'}
+                variant="terminal"
+              />
             </div>
           </div>
+        </div>
 
         {/* Right side: Markdown Editor/Preview */}
         <div className="w-1/2 flex flex-col bg-white dark:bg-gray-800">
@@ -283,14 +284,12 @@ export default function WritePage() {
                 </span>
                 <button
                   onClick={() => setPreviewMode(!previewMode)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    previewMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${previewMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      previewMode ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${previewMode ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
                 <span className={`text-sm ${previewMode ? 'text-black dark:text-white font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
